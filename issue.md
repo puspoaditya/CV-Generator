@@ -1,36 +1,32 @@
-# Phase 2: User Authentication System API
+# Phase 3: Base CV & Job Requirements Management API
 
 ## Overview
-Melanjutkan tahapan inisialisasi awal, fokus pada fase dua ini adalah membangun sistem autentikasi pengguna (Register & Login) untuk backend aplikasi CV & Cover Letter Generator berbasis ElysiaJS.
+Melanjutkan tahapan autentikasi, fokus pada fase ketiga ini adalah membangun fitur pengelolaan data utama, yaitu: **Base CV** (Resume asli/dasar dari pengguna) dan input **Job Requirements** (Syarat/deskripsi lowongan kerja). Data-data ini akan menjadi _context_ penting bagi AI di fase selanjutnya (Fase 4).
 
 ## Target & Fitur
-1. **Registrasi Akun Baru**: Memungkinkan pengguna mendaftar ke sistem dengan aman.
-2. **Login & JWT Generation**: Mengautentikasi pengguna menggunakan email dan password, serta mengeluarkan JSON Web Token (JWT) untuk sesi.
-3. **Route Protection**: Menyediakan cara/middleware untuk melindungi endpoint-endpoint aplikasi agar hanya bisa diakses oleh *user* yang valid (membawa token).
+1. **Upload / Manual Input Base CV**: Menyediakan endpoint bagi user untuk mengirimkan (dalam bentuk teks/JSON terstruktur) _Base CV_ mereka ke dalam sistem.
+2. **Retrieve Base CV**: User dapat melihat/mengakses kembali _Base CV_ yang telah mereka simpan.
+3. **Job Requirements Submission**: Mempersiapkan endpoint untuk menerima input deskripsi pekerjaan (Job Description) yang akan menjadi target lamaran.
+4. **Implementasi Limitasi Tier (Monetisasi Dasar)**: User dengan tier `free` memiliki batasan jumlah _Base CV_ yang bisa disimpan, sementara tier `pro` memiliki akses unlimited.
 
 ## High-Level Tasks (Langkah-Langkah)
 
-- [ ] **Setup Keamanan Password**
-  - Pastikan password **tidak** disimpan dalam bentuk plain-text.
-  - Gunakan pustaka hashing bawaan Bun (`bun:password`) atau pustaka eksternal (seperti `bcryptjs`) sebelum menyimpan data ke database.
+- [ ] **Pembuatan Resume/CV Controller (`src/controllers/resume_controller.ts`)**
+  - Buat endpoint untuk **Create/Update**: Menerima input data CV dari user dan menyimpannya ke tabel `resumes` (skema sudah ada; set `isBase: 1` untuk base CV).
+  - Buat endpoint untuk **Get/List**: Menampilkan detail _Base CV_ milik user yang merequest.
+  
+- [ ] **Persiapan Data Job Requirements**
+  - Buat endpoint atau alur untuk menyimpan _temporary_ atau logging input **Job Requirements**. (Data ini nantinya digabung bersama _Base CV_ untuk dikirim ke promt AI).
 
-- [ ] **Buat Endpoint Registrasi (`POST /api/auth/register`)**
-  - Terima input berupa `name`, `email`, dan `password`.
-  - Lakukan validasi input (contoh: format email valid, password minimal karakter tertentu).
-  - Cek apakah email sudah terdaftar sebelumnya. 
-  - Simpan pengguna baru ke database (skema tabel `users` sudah disiapkan di `src/db/schema.ts`).
+- [ ] **Integrasi Route & Auth Middleware (`src/routes/resume_routes.ts`)**
+  - Lindungi rute endpoint CV menggunakan JWT authentication (seperti yang dibuat di Phase 2).
+  - Ekstrak nilai `user_id` dari JWT token payload untuk memastikan user hanya bisa memodifikasi CV milik mereka sendiri.
 
-- [ ] **Buat Endpoint Login (`POST /api/auth/login`)**
-  - Terima input `email` dan `password`.
-  - Verifikasi kecocokan data dengan yang ada di database.
-  - Jika cocok, hasilkan (generate) JWT yang menyimpan informasi dasar user (misalnya `id` pengguna).
-  - Kembalikan token ini dalam respons JSON.
+- [ ] **Logika Monetisasi Dasar (Free Tier Restriction)**
+  - Pada saat user (tier `free`) mencoba menambahkan _Base CV_, cek di database apakah user tersebut sudah mencapai batas maksimal (misalnya maksimal punya 1 atau 2 _Base CV_).
+  - Jika batas tercapai, kembalikan response error/limitasi (HTTP 403 Forbidden).
 
-- [ ] **Setup Auth Middleware & Testing Route**
-  - Konfigurasikan plugin/middleware JWT di ElysiaJS agar endpoint tertentu wajib menyertakan Authorization Bearer token.
-  - Buat satu endpoint percobaan yang dilindungi (misal `GET /api/auth/me`) untuk membuktikan bahwa perlindungan rute berjalan dengan baik.
-
-**Catatan untuk Implementator:**
-- Database MySQL dan Drizzle ORM sudah terkonfigurasi di `src/db/index.ts`.
-- Tabel `users` (id, name, email, password, tier, createdAt) sudah terdefinisi.
-- Hasil dari endpoint hanya berupa respons JSON (backend only). Fokus pada kebersihan dan keamanan struktur kode API.
+**Catatan Tambahan untuk Implementator:**
+- Cek `src/db/schema.ts` untuk melihat struktur tabel `resumes`.
+- Gunakan _typing_ validasi bawaan ElysiaJS (TypeBox `t.Object` / `t.String`) untuk memvalidasi _body request_.
+- Tidak wajib menangani file berformat PDF/Word pada _initial scope_; fokus utama adalah input berbasis _raw text/JSON_ terlebih dahulu agar mempermudah integrasi dengan AI.
