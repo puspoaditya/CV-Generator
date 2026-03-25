@@ -4,6 +4,7 @@ import { swagger } from "@elysiajs/swagger";
 import { authRoutes } from "./routes/auth_routes";
 import { resumeRoutes } from "./routes/resume_routes";
 import { generationRoutes } from "./routes/generation_routes";
+import { dashboardRoutes } from "./routes/dashboard_routes";
 
 const app = new Elysia()
   .use(swagger())
@@ -20,6 +21,7 @@ const app = new Elysia()
       .use(authRoutes)
       .use(resumeRoutes)
       .use(generationRoutes)
+      .use(dashboardRoutes)
       .get("/hello", () => "Hello from API")
   )
   .listen(process.env.PORT || 3000);

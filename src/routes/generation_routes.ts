@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
-import { handleGenerateResume, handleGenerateCoverLetter } from "../controllers/generation_controller";
+import { handleGenerateResume, handleGenerateCoverLetter, handleGenerateInterviewPrep } from "../controllers/generation_controller";
 
 export const generationRoutes = new Elysia({ prefix: "/generate" })
   .use(
@@ -16,6 +16,12 @@ export const generationRoutes = new Elysia({ prefix: "/generate" })
     }),
   })
   .post("/cover-letter", handleGenerateCoverLetter as any, {
+    body: t.Object({
+      baseResumeId: t.Number(),
+      jobDescription: t.String(),
+    }),
+  })
+  .post("/interview-prep", handleGenerateInterviewPrep as any, {
     body: t.Object({
       baseResumeId: t.Number(),
       jobDescription: t.String(),
