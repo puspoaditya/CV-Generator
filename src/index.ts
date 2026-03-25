@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { swagger } from "@elysiajs/swagger";
+import { authRoutes } from "./routes/auth_routes";
 
 const app = new Elysia()
   .use(swagger())
@@ -14,6 +15,7 @@ const app = new Elysia()
   .get("/ping", () => ({ status: "ok", uptime: process.uptime() }))
   .group("/api", (app) => 
     app
+      .use(authRoutes)
       .get("/hello", () => "Hello from API")
   )
   .listen(process.env.PORT || 3000);
