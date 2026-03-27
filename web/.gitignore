@@ -1,0 +1,6 @@
+# Next.js build output
+.next
+.vercel
+node_modules
+out
+dist
