@@ -57,6 +57,36 @@ export const createBaseResume = async ({ body, jwt, set, request }: Context & { 
   return { message: "Base CV saved successfully" };
 };
 
+import { extractText } from "unpdf";
+
+export const extractPdf = async ({ body, set }: Context & { body: any }) => {
+  const { file } = body;
+  console.log("Extraction requested for file:", file?.name, file?.type);
+
+  if (!file) {
+    set.status = 400;
+    return { error: "File is required" };
+  }
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = new Uint8Array(arrayBuffer);
+    const result = await extractText(buffer);
+    const text = (Array.isArray(result.text) ? result.text.join("\n") : (result.text || ""));
+    
+    console.log("Extraction successful, text length (chars):", text.length);
+    if (text.length > 0) {
+      console.log("Text Preview:", text.substring(0, 100).replace(/\n/g, " "));
+    }
+
+    return { text };
+  } catch (err: any) {
+    console.error("PDF Extraction Error:", err);
+    set.status = 500;
+    return { error: `Server Extraction Error: ${err.message || 'Unknown error'}` };
+  }
+};
+
 export const getMyResumes = async ({ jwt, set, request }: Context & { jwt: any }) => {
   const authHeader = request.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -77,4 +107,27 @@ export const getMyResumes = async ({ jwt, set, request }: Context & { jwt: any }
   });
 
   return userResumes;
+};
+
+export const deleteResume = async ({ params, jwt, set, request }: Context & { params: any; jwt: any }) => {
+  const authHeader = request.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    set.status = 401;
+    return { error: "Unauthorized" };
+  }
+
+  const token = authHeader.split(" ")[1];
+  const payload = await jwt.verify(token);
+  if (!payload) {
+    set.status = 401;
+    return { error: "Unauthorized" };
+  }
+
+  const { id } = params;
+  
+  await db.delete(resumes).where(
+    and(eq(resumes.id, parseInt(id)), eq(resumes.userId, payload.id))
+  );
+
+  return { message: "Resume deleted successfully" };
 };

@@ -18,13 +18,23 @@ export const handleGenerateResume = async ({ body, jwt, set, request }: Context 
     return { error: "Unauthorized" };
   }
 
+  const user = await db.query.users.findFirst({ where: eq(users.id, payload.id) });
+  if (!user) {
+    set.status = 404;
+    return { error: "User not found" };
+  }
+
+  if (!user.isPro && user.credits <= 0) {
+    set.status = 403;
+    return { error: "Insufficient credits. Please upgrade to Pro or buy more credits." };
+  }
+
   const { baseResumeId, jobDescription } = body;
   if (!baseResumeId || !jobDescription) {
     set.status = 400;
     return { error: "Base Resume ID and Job Description are required" };
   }
 
-  // Fetch Base Resume and verify ownership
   const baseResume = await db.query.resumes.findFirst({
     where: and(eq(resumes.id, baseResumeId), eq(resumes.userId, payload.id)),
   });
@@ -35,11 +45,18 @@ export const handleGenerateResume = async ({ body, jwt, set, request }: Context 
   }
 
   // AI Generation
-  const optimizedContent = await generateOptimizedResume(baseResume.content, jobDescription);
-
-  if (!optimizedContent) {
+  let optimizedContent;
+  try {
+    optimizedContent = await generateOptimizedResume(baseResume.content, jobDescription);
+    if (!optimizedContent) throw new Error("AI returned no content");
+  } catch (err: any) {
     set.status = 500;
-    return { error: "AI Generation failed" };
+    return { error: `AI Optimizing Failed: ${err.message}` };
+  }
+
+  // Deduct Credits if not Pro
+  if (!user.isPro) {
+    await db.update(users).set({ credits: user.credits - 1 }).where(eq(users.id, user.id));
   }
 
   // Save to History & New Resume
@@ -59,6 +76,8 @@ export const handleGenerateResume = async ({ body, jwt, set, request }: Context 
 
   return {
     message: "Resume optimized successfully",
+    content: optimizedContent,
+    remainingCredits: user.isPro ? "Unlimited" : user.credits - 1,
   };
 };
 
@@ -67,6 +86,17 @@ export const handleGenerateCoverLetter = async ({ body, jwt, set, request }: Con
   if (!payload) {
     set.status = 401;
     return { error: "Unauthorized" };
+  }
+
+  const user = await db.query.users.findFirst({ where: eq(users.id, payload.id) });
+  if (!user) {
+    set.status = 404;
+    return { error: "User not found" };
+  }
+
+  if (!user.isPro && user.credits <= 0) {
+    set.status = 403;
+    return { error: "Insufficient credits. Please upgrade to Pro or buy more credits." };
   }
 
   const { baseResumeId, jobDescription } = body;
@@ -84,11 +114,18 @@ export const handleGenerateCoverLetter = async ({ body, jwt, set, request }: Con
     return { error: "Base Resume not found" };
   }
 
-  const coverLetter = await generateCoverLetter(baseResume.content, jobDescription);
-
-  if (!coverLetter) {
+  let coverLetter;
+  try {
+    coverLetter = await generateCoverLetter(baseResume.content, jobDescription);
+    if (!coverLetter) throw new Error("AI returned no content");
+  } catch (err: any) {
     set.status = 500;
-    return { error: "AI Generation failed" };
+    return { error: `AI Cover Letter Failed: ${err.message}` };
+  }
+
+  // Deduct Credits if not Pro
+  if (!user.isPro) {
+    await db.update(users).set({ credits: user.credits - 1 }).where(eq(users.id, user.id));
   }
 
   await db.insert(generationHistory).values({
@@ -101,6 +138,7 @@ export const handleGenerateCoverLetter = async ({ body, jwt, set, request }: Con
   return {
     message: "Cover Letter generated successfully",
     content: coverLetter,
+    remainingCredits: user.isPro ? "Unlimited" : user.credits - 1,
   };
 };
 
@@ -109,6 +147,17 @@ export const handleGenerateInterviewPrep = async ({ body, jwt, set, request }: C
   if (!payload) {
     set.status = 401;
     return { error: "Unauthorized" };
+  }
+
+  const user = await db.query.users.findFirst({ where: eq(users.id, payload.id) });
+  if (!user) {
+    set.status = 404;
+    return { error: "User not found" };
+  }
+
+  if (!user.isPro && user.credits <= 0) {
+    set.status = 403;
+    return { error: "Insufficient credits. Please upgrade to Pro or buy more credits." };
   }
 
   const { baseResumeId, jobDescription } = body;
@@ -126,11 +175,18 @@ export const handleGenerateInterviewPrep = async ({ body, jwt, set, request }: C
     return { error: "Base Resume not found" };
   }
 
-  const interviewPrep = await generateInterviewQuestions(baseResume.content, jobDescription);
-
-  if (!interviewPrep) {
+  let interviewPrep;
+  try {
+    interviewPrep = await generateInterviewQuestions(baseResume.content, jobDescription);
+    if (!interviewPrep) throw new Error("AI returned no content");
+  } catch (err: any) {
     set.status = 500;
-    return { error: "AI Generation failed" };
+    return { error: `AI Interview Prep Failed: ${err.message}` };
+  }
+
+  // Deduct Credits if not Pro
+  if (!user.isPro) {
+    await db.update(users).set({ credits: user.credits - 1 }).where(eq(users.id, user.id));
   }
 
   await db.insert(generationHistory).values({
@@ -143,5 +199,28 @@ export const handleGenerateInterviewPrep = async ({ body, jwt, set, request }: C
   return {
     message: "Interview preparation generated successfully",
     content: interviewPrep,
+    remainingCredits: user.isPro ? "Unlimited" : user.credits - 1,
   };
+};
+
+export const handleGuestGenerate = async ({ body, set }: Context & { body: any }) => {
+  const { resumeContent, jobDescription } = body;
+  
+  if (!resumeContent || !jobDescription) {
+    set.status = 400;
+    return { error: "Resume Content and Job Description are required" };
+  }
+
+  try {
+    const optimizedContent = await generateOptimizedResume(resumeContent, jobDescription);
+    if (!optimizedContent) throw new Error("AI returned no content");
+    
+    return {
+      message: "Guest optimization successful",
+      content: optimizedContent,
+    };
+  } catch (err: any) {
+    set.status = 500;
+    return { error: `AI Guest Optimizing Failed: ${err.message}` };
+  }
 };

@@ -1,8 +1,15 @@
 import OpenAI from "openai";
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || "sk-your-key-here",
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY,
+  defaultHeaders: {
+    "HTTP-Referer": "http://localhost:3000",
+    "X-Title": "AI CV Generator",
+  }
 });
+
+const MODEL_ID = "stepfun/step-3.5-flash:free";
 
 export const generateOptimizedResume = async (baseResume: string, jobDescription: string) => {
   const prompt = `
@@ -20,16 +27,20 @@ export const generateOptimizedResume = async (baseResume: string, jobDescription
     - Use relevant keywords from the job description.
     - Highlight experiences that match the requirements.
     - Keep a professional, modern tone.
-    - Output only the optimized CV content in a clear format.
+    - Output ONLY the optimized CV content. do not add any preamble or conversational text.
   `;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.7,
-  });
-
-  return response.choices[0]?.message?.content || null;
+  try {
+    const response = await openai.chat.completions.create({
+      model: MODEL_ID,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+    });
+    return response.choices[0]?.message?.content || null;
+  } catch (err: any) {
+    console.error("OpenRouter Resume Error:", err);
+    throw err;
+  }
 };
 
 export const generateCoverLetter = async (baseResume: string, jobDescription: string) => {
@@ -47,16 +58,20 @@ export const generateCoverLetter = async (baseResume: string, jobDescription: st
     - Address the key requirements of the job.
     - Show enthusiasm and culture fit.
     - Keep it concise (max 400 words).
-    - Output only the cover letter content.
+    - Output ONLY the cover letter content. do not add any preamble or conversational text.
   `;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.7,
-  });
-
-  return response.choices[0]?.message?.content || null;
+  try {
+    const response = await openai.chat.completions.create({
+      model: MODEL_ID,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+    });
+    return response.choices[0]?.message?.content || null;
+  } catch (err: any) {
+    console.error("OpenRouter Cover Letter Error:", err);
+    throw err;
+  }
 };
 
 export const generateInterviewQuestions = async (baseResume: string, jobDescription: string) => {
@@ -75,13 +90,18 @@ export const generateInterviewQuestions = async (baseResume: string, jobDescript
     - Target specific skills mentioned in the job description.
     - Identify potential gaps in the candidate's CV and ask about them.
     - Provide the output in a clean, readable format.
+    - Output ONLY the questions and responses. do not add any preamble or conversational text.
   `;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.7,
-  });
-
-  return response.choices[0]?.message?.content || null;
+  try {
+    const response = await openai.chat.completions.create({
+      model: MODEL_ID,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+    });
+    return response.choices[0]?.message?.content || null;
+  } catch (err: any) {
+    console.error("OpenRouter Interview Error:", err);
+    throw err;
+  }
 };

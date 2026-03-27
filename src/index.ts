@@ -1,12 +1,15 @@
 import { Elysia } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { swagger } from "@elysiajs/swagger";
+import { cors } from "@elysiajs/cors";
 import { authRoutes } from "./routes/auth_routes";
 import { resumeRoutes } from "./routes/resume_routes";
 import { generationRoutes } from "./routes/generation_routes";
 import { dashboardRoutes } from "./routes/dashboard_routes";
+import { paymentRoutes } from "./routes/payment_routes";
 
 const app = new Elysia()
+  .use(cors())
   .use(swagger())
   .use(
     jwt({
@@ -22,6 +25,7 @@ const app = new Elysia()
       .use(resumeRoutes)
       .use(generationRoutes)
       .use(dashboardRoutes)
+      .use(paymentRoutes)
       .get("/hello", () => "Hello from API")
   )
   .listen(process.env.PORT || 3000);

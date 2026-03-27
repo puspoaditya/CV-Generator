@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
-import { createBaseResume, getMyResumes } from "../controllers/resume_controller";
+import { createBaseResume, getMyResumes, extractPdf, deleteResume } from "../controllers/resume_controller";
 
 export const resumeRoutes = new Elysia({ prefix: "/resumes" })
   .use(
@@ -15,4 +15,10 @@ export const resumeRoutes = new Elysia({ prefix: "/resumes" })
       content: t.String(), // Raw text or JSON string
     }),
   })
-  .get("/", getMyResumes as any);
+  .post("/extract", extractPdf as any, {
+    body: t.Object({
+      file: t.File(),
+    }),
+  })
+  .get("/", getMyResumes as any)
+  .delete("/:id", deleteResume as any);

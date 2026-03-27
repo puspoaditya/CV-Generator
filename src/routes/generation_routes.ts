@@ -1,8 +1,14 @@
 import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
-import { handleGenerateResume, handleGenerateCoverLetter, handleGenerateInterviewPrep } from "../controllers/generation_controller";
+import { handleGenerateResume, handleGenerateCoverLetter, handleGenerateInterviewPrep, handleGuestGenerate } from "../controllers/generation_controller";
 
 export const generationRoutes = new Elysia({ prefix: "/generate" })
+  .post("/guest", handleGuestGenerate as any, {
+    body: t.Object({
+      resumeContent: t.String(),
+      jobDescription: t.String(),
+    }),
+  })
   .use(
     jwt({
       name: 'jwt',
