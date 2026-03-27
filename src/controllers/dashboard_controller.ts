@@ -1,5 +1,5 @@
 import { db } from "../db";
-import { generationHistory, resumes } from "../db/schema";
+import { users, generationHistory, resumes } from "../db/schema";
 import { eq, desc, count, sql } from "drizzle-orm";
 import type { Context } from "elysia";
 
@@ -32,6 +32,10 @@ export const getStats = async ({ jwt, set, request }: Context & { jwt: any }) =>
     return { error: "Unauthorized" };
   }
 
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, payload.id),
+  });
+
   const resumeCount = await db
     .select({ value: count() })
     .from(resumes)
@@ -43,7 +47,10 @@ export const getStats = async ({ jwt, set, request }: Context & { jwt: any }) =>
     .where(eq(generationHistory.userId, payload.id));
 
   return {
-    totalResumes: resumeCount[0]?.value || 0,
+    resumesCount: resumeCount[0]?.value || 0,
     totalGenerations: historyCount[0]?.value || 0,
+    credits: user?.credits || 0,
+    isPro: user?.isPro || false,
+    tier: user?.tier || "free"
   };
 };

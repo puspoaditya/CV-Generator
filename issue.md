@@ -1,33 +1,31 @@
-# Phase 5: Interview Preparation & Dashboard History API
+# Phase 7: UI Polish (Shadcn Alignment) & Bug Fixes
 
 ## Overview
-Setelah berhasil membangun fitur pembuatan CV dan Surat Lamaran secara otomatis via AI, fase kelima ini berfokus untuk menyempurnakan fungsi utama aplikasi. Fitur yang akan dibangun adalah **Interview Preparation** (Simulasi latihan wawancara) dan layanan **Dashboard History** untuk menampilkan riwayat aktivitas _generation_ pengguna.
+Meskipun komponen Shadcn UI telah diinstal dan diintegrasikan pada *Phase 6*, tampilan aplikasi web masih belum memancarkan desain premium ala dokumentasi resmi Shadcn (kurangnya aksen *border*, bayangan, atau tipografi yang tepat). Selain itu, terdapat *bug* fungsional pada form "Generate CV", di mana elemen *Select* untuk memilih *Base CV* tidak dapat diklik atau nilainya tidak tersimpan dengan benar.
 
-## Target & Fitur
-1. **Interview Preparation (AI)**: Menghasilkan daftar prediksi pertanyaan wawancara (HR & Teknis) lengkap dengan saran atau kerangka jawabannya. *Prompt* akan disesuaikan secara khusus dengan data _Base CV_ dan _Job Requirements_ milik user.
-2. **Dashboard History**: Endpoint API terpadu yang menyajikan seluruh riwayat generasi (CV, Cover Letter, Interview Prep) untuk ditampilkan di _dashboard_ *front-end* pengguna.
-3. **Statistik Pengguna**: Data ringkas (seperti jumlah CV yang dibuat atau sisa kuota *free tier*).
+Fase ini bertujuan untuk merapikan seluruh desain antarmuka agar benar-benar identik dengan standar Shadcn UI dan memperbaiki fungsi form yang patah.
+
+## Masalah yang Ditemukan
+1. **Shadcn UI Mismatch**: Tampilan komponen (seperti `Card`, `Button`, `Input`) belum terlihat seperti aslinya. Kemungkinan ada kesalahan dalam pemetaan variabel CSS (`globals.css`), konfigurasi Tailwind (`tailwind.config.ts`), atau integrasi font standar Shadcn (Inter).
+2. **Defect pada Fitur Select CV**: Komponen `<Select>` dari Shadcn membutuhkan struktur hirarki khusus (`SelectTrigger`, `SelectValue`, `SelectContent`, `SelectItem`) dan *event handler* `onValueChange` pengganti `onChange` bawaan HTML asli. Saat ini *state* `selectedResumeId` gagal terbarui sehingga CV tidak bisa di-*generate*.
 
 ## High-Level Tasks (Langkah-Langkah)
 
-- [ ] **Fungsi AI Interview Prep (`src/services/ai_service.ts`)**
-  - Tambahkan method baru untuk *prompting* AI (misalnya `generateInterviewQuestions`).
-  - Rancang _prompt_ agar AI bertindak sebagai _Hiring Manager_ dan merumuskan ~5 pertanyaan spesifik berdasarkan celah/kecocokan antara pengalaman di CV dengan syarat lowongan. Minta AI mereturn respons berupa format terstruktur (JSON array disarankan).
+- [ ] **Audit & Fix Konfigurasi Tailwind & CSS**
+  - Pastikan file `tailwind.config.ts` menunjuk ke path yang tepat (`./src/**/*.{js,ts,jsx,tsx,mdx}`).
+  - Sinkronkan kembali file `globals.css` dengan sekumpulan variabel root HSL resmi dari sistem Shadcn (tema Slate/Dark).
+  - Pastikan font inter (`next/font/google`) terpasang secara *global* di dalam komponen `body`.
 
-- [ ] **Endpoint Interview Prep (`src/controllers/generation_controller.ts`)**
-  - Tambahkan fungsi handler `POST /interview-prep` di _controller_ generasi.
-  - Ambil `baseResumeId` dan `jobDescription` dari request, validasi hak milik atas CV.
-  - Simpan respons AI ke dalam tabel `generation_history` (dengan `type: 'interview_prep'`).
-  - Daftarkan endpoint ini ke `src/routes/generation_routes.ts`.
+- [ ] **Penyempurnaan Tampilan Komponen (UI Polish)**
+  - Pastikan setiap form (Login, Register, Generate) terbungkus rapi di dalam `<Card>` dengan *padding* dan *border radius* yang sesuai dengan pakem Shadcn (contoh: `<CardHeader>`, `<CardTitle>`, `<CardContent>`).
+  - Hapus kelas-kelas kustom Tailwind yang bentrok (konflik) dengan gaya asli buatan Shadcn.
 
-- [ ] **Pembuatan Dashboard Controller (`src/controllers/dashboard_controller.ts`)**
-  - Buat handler (misalnya `getGenerationHistory`) yang melakukan query (Gunakan `drizzle-orm`) ke tabel `generation_history` dan memfilternya spesifik untuk `userId` dari JWT.
-  - Tambahkan fitur _sorting_ terbaru ke terlama (`ORDER BY createdAt DESC`) dan opsional limitasi jumlah data/halaman (_pagination_).
+- [ ] **Fix Bug `<Select>` pada Halaman Generate**
+  - Refaktor ulang implementasi komponen `Select` di `web/src/app/generate/page.tsx`.
+  - Pastikan *prop* `onValueChange={(value) => setSelectedResumeId(value)}` terpasang alih-alih `onChange`.
+  - Konversi semua tipe data ID dari *integer* `id` backend menjadi *string* saat dimasukkan ke dalam atribut `value` pad `<SelectItem>`.
+  - Verifikasi pengguna bisa memilih list CV sebelum menekan tombol Generate.
 
-- [ ] **Registrasi Dashboard Routes (`src/routes/dashboard_routes.ts`)**
-  - Buat file _router_ baru untuk endpoint yang berkaitan dengan data _dashboard_ (contoh: `GET /api/dashboard/history` dan `GET /api/dashboard/stats`).
-  - Integrasikan _router_ ini di _entry point_ `src/index.ts` dan pastikan kesemuanya terlindungi oleh proteksi JWT.
-
-**Catatan Tambahan untuk Implementator:**
-- Respons AI pada fitur wawancara berpotensi sangat panjang. Pertimbangkan penggunaan format JSON terstruktur (OpenAI JSON Mode) agar data mudah di-_render_ oleh _frontend_.
-- Struktur awal tabel `generation_history` sudah men-support kolom `outputData` berformat JSON/Teks panjang. Pastikan penanganan *parsing string* JSON aman (tidak menyebabkan *error 500* jika AI meleset dari format).
+**Kriteria Penerimaan (Acceptance Criteria):**
+- Nuansa desain aplikasi (`globals.css` + Tailwind) harus selaras 100% dengan estetika minimalis web shadcn/ui.
+- Pengguna dapat memilih daftar *Base CV* dari *dropdown list* dengan lancar, *state* tersimpan, dan tombol memicu request ke *backend* tanpa *error validation*.
