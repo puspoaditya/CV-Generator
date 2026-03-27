@@ -105,3 +105,73 @@ export const generateInterviewQuestions = async (baseResume: string, jobDescript
     throw err;
   }
 };
+
+export const extractResumeFromLinkedIn = async (htmlContent: string) => {
+  const prompt = `
+    You are an expert data extractor. I have a raw HTML or text from a LinkedIn public profile.
+    Extract the following information and format it into a professional, clean Markdown resume:
+    - NAME
+    - SUMMARY / ABOUT
+    - EXPERIENCE (Company, Title, Dates, and any bullet points)
+    - EDUCATION
+    - SKILLS
+    
+    If you cannot find some fields, just omit them. Ensure the output is JUST the Markdown resume, no conversational text.
+    
+    LINKEDIN CONTENT:
+    ${htmlContent.substring(0, 50000)} 
+  `;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: MODEL_ID,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.3,
+    });
+    return response.choices[0]?.message?.content || "Gagal mengekstrak data LinkedIn.";
+  } catch (err: any) {
+    console.error("OpenRouter LinkedIn Extraction Error:", err);
+    throw err;
+  }
+};
+
+export const generateStructuredResume = async (markdownContent: string) => {
+  const prompt = `
+    You are an expert data parser. I will provide you with a Markdown resume content.
+    Convert this into a valid JSON object matching this structure:
+    {
+      "name": "string",
+      "role": "string",
+      "summary": "string",
+      "skills": ["string", "string"],
+      "experience": [
+        {
+          "title": "string",
+          "company": "string",
+          "period": "string",
+          "description": ["bullet1", "bullet2"]
+        }
+      ]
+    }
+    
+    CONTENT:
+    ${markdownContent}
+    
+    INSTRUCTIONS:
+    - Respond ONLY with valid JSON.
+    - If you can't find a role, extrapolate a professional one from the experience.
+  `;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: MODEL_ID,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.1,
+      response_format: { type: "json_object" }
+    });
+    return JSON.parse(response.choices[0]?.message?.content || "{}");
+  } catch (err: any) {
+    console.error("Structured Parsing Error:", err);
+    return null;
+  }
+};

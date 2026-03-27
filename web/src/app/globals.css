@@ -4,52 +4,43 @@
 
 @layer base {
   :root {
-    --background: 222 47% 4%;
-    --foreground: 213 31% 91%;
-    --card: 222 47% 6%;
-    --card-foreground: 213 31% 91%;
-    --popover: 222 47% 6%;
-    --popover-foreground: 213 31% 91%;
-    --primary: 263.4 70% 50.4%; /* Deep Violet/Indigo */
+    --background: 213 11% 75%; /* #B8BFC8 equivalent */
+    --foreground: 210 39% 10%; /* #0F1923 equivalent */
+    --card: 212 12% 80%; /* #C4CAD2 equivalent */
+    --card-foreground: 210 39% 10%;
+    --popover: 212 12% 80%;
+    --popover-foreground: 210 39% 10%;
+    --primary: 211 52% 23%; /* #1C3A5A */
     --primary-foreground: 210 40% 98%;
-    --secondary: 222 47% 12%;
-    --secondary-foreground: 213 31% 91%;
-    --muted: 222 47% 12%;
-    --muted-foreground: 215.4 16.3% 56.9%;
-    --accent: 263.4 70% 50.4%;
+    --secondary: 213 11% 70%; 
+    --secondary-foreground: 210 39% 10%;
+    --muted: 213 11% 70%;
+    --muted-foreground: 215 15% 40%;
+    --accent: 211 52% 23%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
-    --border: 222 47% 15%;
-    --input: 222 47% 15%;
-    --ring: 263.4 70% 50.4%;
-    --radius: 1.25rem;
+    --border: 210 10% 20% / 0.1;
+    --input: 210 10% 20% / 0.1;
+    --ring: 211 52% 23%;
+    --radius: 1rem;
   }
 }
 
 @layer utilities {
-  .glass {
-    @apply bg-white/5 backdrop-blur-lg border border-white/10 shadow-xl transition-all duration-300;
+  .hero-grid {
+    background-image:
+      linear-gradient(rgba(15,25,35,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15,25,35,0.07) 1px, transparent 1px);
+    background-size: 52px 52px;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
   }
-  .glass-dark {
-    @apply bg-black/60 backdrop-blur-2xl border border-white/5 shadow-[0_8px_32px_0_rgba(0,0,0,0.8)] transition-all duration-300;
+  .clay-surface {
+    @apply bg-clay-200 border border-black/10 shadow-sm transition-all duration-300;
   }
-  .glass-accent {
-    @apply bg-primary/10 backdrop-blur-xl border border-primary/20 shadow-2xl;
-  }
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-br from-white via-white/90 to-white/40;
-  }
-  .text-gradient-primary {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-violet-500 via-indigo-400 to-cyan-300;
-  }
-  .text-glow {
-    text-shadow: 0 0 30px rgba(139, 92, 246, 0.4);
-  }
-  .bg-mesh {
-    background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-                      radial-gradient(at 50% 0%, hsla(225,39%,30%,0.2) 0, transparent 50%), 
-                      radial-gradient(at 100% 0%, hsla(339,49%,30%,0.1) 0, transparent 50%);
+  .clay-surface-2 {
+    @apply bg-clay-300 border border-black/10 transition-all duration-300;
   }
 }
 
@@ -58,7 +49,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-[#020617] text-foreground font-sans selection:bg-primary/30;
+    @apply bg-background text-foreground font-sans selection:bg-primary/20;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }

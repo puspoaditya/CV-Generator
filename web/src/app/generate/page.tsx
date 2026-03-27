@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { jsPDF } from "jspdf";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -44,24 +46,39 @@ import {
   AlertCircle,
   LogIn,
   UserPlus,
-  ShieldAlert
+  ShieldAlert,
+  Link as LinkIcon,
+  Building,
+  Briefcase,
+  Database,
+  ArrowDown
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 export default function Generate() {
   const router = useRouter();
   const [isGuest, setIsGuest] = useState(true);
   const [baseResumes, setBaseResumes] = useState<any[]>([]);
+  
+  // Resume State
+  const [resumeSource, setResumeSource] = useState<"text" | "linkedin" | "database">("text");
   const [selectedResumeId, setSelectedResumeId] = useState("");
   const [guestResumeContent, setGuestResumeContent] = useState("");
-  const [jobDescription, setJobDescription] = useState("");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+  
+  // Job Criteria State
+  const [jobPosition, setJobPosition] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [jobDesc, setJobDesc] = useState("");
+  const [jobQuals, setJobQuals] = useState("");
+  
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState("");
-  const [activeTab, setActiveTab] = useState("resume");
+  const [activeAIAction, setActiveAIAction] = useState("resume");
   const [copied, setCopied] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Add CV Modal state
   const [isAdding, setIsAdding] = useState(false);
   const [form, setForm] = useState({ title: "", content: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -72,6 +89,7 @@ export default function Generate() {
     if (token) {
       setIsGuest(false);
       fetchResumes();
+      setResumeSource("database");
     }
   }, []);
 
@@ -87,6 +105,32 @@ export default function Generate() {
     }
   };
 
+  const handleLinkedInExtract = async () => {
+    if (!linkedinUrl) {
+      toast.error("Masukkan URL profil LinkedIn Anda.");
+      return;
+    }
+    setUploading(true);
+    try {
+      const res = await apiFetch("/generate/extract-linkedin", {
+        method: "POST",
+        body: JSON.stringify({ url: linkedinUrl }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setGuestResumeContent(data.content);
+        setResumeSource("text");
+        toast.success("Data profil LinkedIn berhasil ditarik!");
+      } else {
+        toast.error("Gagal menarik data LinkedIn. Gunakan metode manual.");
+      }
+    } catch (err) {
+      toast.error("Kesalahan jaringan.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -98,7 +142,6 @@ export default function Generate() {
         const formData = new FormData();
         formData.append("file", file);
         
-        // Use extraction endpoint
         const res = await apiFetch("/resumes/extract", {
           method: "POST",
           body: formData,
@@ -106,11 +149,8 @@ export default function Generate() {
 
         if (res.ok) {
           const data = await res.json();
-          if (isGuest) {
-            setGuestResumeContent(data.text);
-          } else {
-            setForm(prev => ({ ...prev, content: data.text, title: prev.title || file.name.replace(".pdf", "") }));
-          }
+          setGuestResumeContent(data.text);
+          setResumeSource("text");
         } else {
           const errorData = await res.json();
           setErrorMessage(errorData.error || "Gagal mengekstrak PDF.");
@@ -120,16 +160,17 @@ export default function Generate() {
       }
     } catch (err) {
       console.error(err);
-      setErrorMessage("Kesalahan jaringan saat memproses file.");
     } finally {
       setUploading(false);
     }
   };
 
-  const handleAddCV = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddCV = async () => {
+    if (!form.title || !form.content) {
+      toast.error("Judul dan Konten wajib diisi.");
+      return;
+    }
     setSubmitting(true);
-    setErrorMessage("");
     try {
       const res = await apiFetch("/resumes", {
         method: "POST",
@@ -139,50 +180,58 @@ export default function Generate() {
         setIsAdding(false);
         setForm({ title: "", content: "" });
         await fetchResumes();
+        toast.success("Resume berhasil disimpan.");
       } else {
-        const data = await res.json();
-        setErrorMessage(data.error || "Gagal menyimpan CV");
+        toast.error("Gagal menyimpan resume.");
       }
     } catch (err) {
-      setErrorMessage("Kesalahan jaringan");
+      toast.error("Kesalahan jaringan.");
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleGenerate = async () => {
-    if (isGuest && !guestResumeContent) {
-      setErrorMessage("Silakan masukkan konten resume Anda terlebih dahulu.");
+    if (resumeSource === "text" && !guestResumeContent) {
+      setErrorMessage("Silakan masukkan konten resume Anda.");
       return;
     }
-    if (!isGuest && !selectedResumeId) {
-      setErrorMessage("Silakan pilih CV Utama terlebih dahulu.");
+    if (resumeSource === "database" && !selectedResumeId) {
+      setErrorMessage("Silakan pilih CV Utama dari database.");
       return;
     }
-    if (!jobDescription) {
-      setErrorMessage("Silakan masukkan Deskripsi Pekerjaan.");
+    if (!jobPosition || !jobDesc) {
+      setErrorMessage("Posisi dan Deskripsi Pekerjaan wajib diisi.");
       return;
     }
 
     setLoading(true);
     setResult("");
     setErrorMessage("");
+
+    const combinedJobDetails = `
+      POSITION: ${jobPosition}
+      COMPANY: ${companyName}
+      DESCRIPTION: ${jobDesc}
+      QUALIFICATIONS: ${jobQuals}
+    `.trim();
+
     try {
       let res;
-      if (isGuest) {
+      if (isGuest || resumeSource === "text" || resumeSource === "linkedin") {
         res = await apiFetch("/generate/guest", {
           method: "POST",
           body: JSON.stringify({
             resumeContent: guestResumeContent,
-            jobDescription,
+            jobDescription: combinedJobDetails,
           }),
         });
       } else {
-        res = await apiFetch(`/generate/${activeTab}`, {
+        res = await apiFetch(`/generate/${activeAIAction}`, {
           method: "POST",
           body: JSON.stringify({
             baseResumeId: parseInt(selectedResumeId),
-            jobDescription,
+            jobDescription: combinedJobDetails,
           }),
         });
       }
@@ -190,6 +239,9 @@ export default function Generate() {
       const data = await res.json();
       if (res.ok) {
         setResult(data.resume?.content || data.content || JSON.stringify(data, null, 2));
+        setTimeout(() => {
+          document.getElementById('result-section')?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
       } else if (res.status === 403) {
         setErrorMessage("Kredit tidak mencukupi.");
         setTimeout(() => router.push("/pricing"), 2000);
@@ -197,152 +249,48 @@ export default function Generate() {
         setErrorMessage(data.error || "Generasi gagal");
       }
     } catch (err: any) {
-      console.error(err);
       setErrorMessage("Kesalahan Klien: " + (err.message || "Error tidak diketahui"));
     } finally {
       setLoading(false);
     }
   };
 
-  const downloadPDF = () => {
+  const downloadPDF = async () => {
     if (isGuest) {
-       setErrorMessage("Silakan daftar untuk mengunduh hasil dalam format PDF.");
+       setErrorMessage("Silakan daftar untuk mengunduh hasil dalam format PDF premium.");
        return;
     }
     if (!result) return;
-    const doc = new jsPDF();
-    // (Existing PDF Logic preserved...)
-    const margin = 20;
-    const pageHeight = 280;
-    const pageWidth = 170;
-    let cursorY = 25;
-    const navyColor = [0, 80, 157];
-    const blackColor = [0, 0, 0];
-    const grayColor = [100, 116, 139];
-    const rawLines = result.split("\n").map(l => l.trim()).filter(l => l !== "");
-    if (activeTab === "resume") {
-      let name = ""; let jobTitle = ""; let contactInfo = ""; let startIdx = 0;
-      if (rawLines.length > 0) {
-        name = rawLines[0].replace(/[*#]/g, "").trim().toUpperCase();
-        startIdx = 1;
-        if (startIdx < rawLines.length && !rawLines[startIdx].includes("@") && !rawLines[startIdx].includes("+") && !rawLines[startIdx].includes("linkedin.com") && rawLines[startIdx].length < 60) {
-          jobTitle = rawLines[startIdx].replace(/[*#]/g, "").trim().toUpperCase();
-          startIdx++;
-        }
-        while (startIdx < rawLines.length && (rawLines[startIdx].includes("@") || rawLines[startIdx].includes("+") || rawLines[startIdx].includes("|") || rawLines[startIdx].includes("linkedin") || rawLines[startIdx].length < 100)) {
-          if (!rawLines[startIdx].startsWith("#") && !rawLines[startIdx].startsWith("*")) {
-            const cleanContact = rawLines[startIdx].replace(/[*#]/g, "").trim();
-            contactInfo += (contactInfo ? " | " : "") + cleanContact;
-            startIdx++;
-          } else { break; }
-        }
+    
+    setUploading(true);
+    toast.info("Sedang merekayasa PDF Premium...");
+
+    try {
+      const res = await apiFetch("/generate/export-pdf", {
+        method: "POST",
+        body: JSON.stringify({ content: result }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Gagal mengunduh PDF dari server.");
       }
-      doc.setTextColor(navyColor[0], navyColor[1], navyColor[2]);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(24);
-      doc.text(name || "NAMA KANDIDAT", margin, cursorY);
-      cursorY += 10;
-      if (jobTitle) {
-        doc.setTextColor(blackColor[0], blackColor[1], blackColor[2]);
-        doc.setFontSize(16);
-        doc.text(jobTitle, margin, cursorY);
-        cursorY += 8;
-      }
-      if (contactInfo) {
-        doc.setTextColor(grayColor[0], grayColor[1], grayColor[2]);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(10);
-        doc.text(contactInfo, margin, cursorY);
-        cursorY += 12;
-      }
-      let currentSection = "";
-      let skillsList: string[] = [];
-      const flushSkills = () => {
-        if (skillsList.length === 0) return;
-        doc.setTextColor(blackColor[0], blackColor[1], blackColor[2]);
-        doc.setFontSize(10);
-        const colWidth = pageWidth / 3;
-        for (let i = 0; i < skillsList.length; i++) {
-          const col = i % 3;
-          const row = Math.floor(i / 3);
-          const skillY = cursorY + (row * 6);
-          if (skillY > pageHeight - 10) { doc.addPage(); cursorY = 20; }
-          doc.text("• " + skillsList[i], margin + (col * colWidth), skillY);
-          if (col === 2 || i === skillsList.length - 1) { if (i === skillsList.length - 1) cursorY = skillY + 8; }
-        }
-        skillsList = [];
-      };
-      const sectionKeywords = ["SUMMARY", "EXPERIENCE", "EDUCATION", "SKILLS", "ADDITIONAL", "PROJECTS", "CERTIFICATIONS"];
-      for (let i = startIdx; i < rawLines.length; i++) {
-        let line = rawLines[i].trim();
-        let nextLine = (i + 1 < rawLines.length) ? rawLines[i+1].trim() : "";
-        let isHeader = line.startsWith("#");
-        if (!isHeader && line.length < 30 && sectionKeywords.some(kw => line.toUpperCase().includes(kw))) { isHeader = true; }
-        if (isHeader) {
-          if (currentSection === "SKILLS") flushSkills();
-          currentSection = line.toUpperCase().replace(/#/g, "").trim();
-          cursorY += 5;
-          if (cursorY > pageHeight - 20) { doc.addPage(); cursorY = 20; }
-          doc.setTextColor(navyColor[0], navyColor[1], navyColor[2]);
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(12);
-          doc.text(currentSection, margin, cursorY);
-          cursorY += 2;
-          doc.setDrawColor(navyColor[0], navyColor[1], navyColor[2]);
-          doc.setLineWidth(0.5);
-          doc.line(margin, cursorY, margin + pageWidth, cursorY);
-          cursorY += 8;
-          continue;
-        }
-        if (currentSection.includes("SKILLS") && (line.startsWith("*") || line.startsWith("-") || line.includes("•"))) {
-          skillsList.push(line.replace(/[*•-]/g, "").trim());
-          continue;
-        } else if (currentSection.includes("SKILLS") && skillsList.length > 0 && line.length > 0) { flushSkills(); }
-        const dateRegex = /(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|20\d\d).*?(?:Present|20\d\d|Current)/i;
-        if (nextLine.match(dateRegex) && !line.startsWith("*") && !line.startsWith("-") && line.length < 100) {
-          doc.setTextColor(blackColor[0], blackColor[1], blackColor[2]);
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(11);
-          doc.text(line.replace(/[*#]/g, "").trim(), margin, cursorY);
-          doc.text(nextLine.replace(/[*#]/g, "").trim(), margin + pageWidth, cursorY, { align: "right" });
-          cursorY += 6; i++; continue;
-        }
-        doc.setTextColor(blackColor[0], blackColor[1], blackColor[2]);
-        let cleanLine = line.replace(/\*\*/g, "");
-        if (cleanLine.startsWith("* ") || cleanLine.startsWith("- ")) {
-          doc.setFont("helvetica", "normal");
-          cleanLine = "•   " + cleanLine.substring(2);
-        } else { doc.setFont("helvetica", "normal"); }
-        cleanLine = cleanLine.replace(/[*#]/g, "");
-        const wrappedLines = doc.splitTextToSize(cleanLine, pageWidth);
-        wrappedLines.forEach((wLine: string) => {
-          if (cursorY > pageHeight - 10) { doc.addPage(); cursorY = 20; }
-          doc.text(wLine, margin, cursorY);
-          cursorY += 5;
-        });
-        cursorY += 1;
-      }
-      if (currentSection.includes("SKILLS")) flushSkills();
-    } else {
-      doc.setTextColor(blackColor[0], blackColor[1], blackColor[2]);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(11);
-      for (let i = 0; i < rawLines.length; i++) {
-        let line = rawLines[i].trim();
-        if (!line) { cursorY += 5; continue; }
-        if (line.startsWith("#") || line.startsWith("**")) {
-          doc.setFont("helvetica", "bold"); doc.setFontSize(13);
-          line = line.replace(/[#*]/g, "").trim(); cursorY += 4;
-        } else { doc.setFont("helvetica", "normal"); doc.setFontSize(11); }
-        const wrappedLines = doc.splitTextToSize(line, pageWidth);
-        wrappedLines.forEach((wLine: string) => {
-          if (cursorY > pageHeight - 10) { doc.addPage(); cursorY = 20; }
-          doc.text(wLine, margin, cursorY); cursorY += 6;
-        });
-        cursorY += 2;
-      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `CVCraft_${activeAIAction}_${new Date().getTime()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success("PDF Premium berhasil diunduh!");
+    } catch (err: any) {
+      toast.error(err.message || "Ekspor PDF Gagal.");
+    } finally {
+      setUploading(false);
     }
-    doc.save(`hasil_optimasi_${activeTab}.pdf`);
   };
 
   const copyToClipboard = () => {
@@ -352,28 +300,26 @@ export default function Generate() {
   };
 
   return (
-    <main className="min-h-screen bg-[#020617] text-slate-200 selection:bg-primary/30">
-      <div className="fixed inset-0 overflow-hidden pointer-events-none bg-mesh opacity-50" />
-
-      <nav className="border-b border-white/5 backdrop-blur-md bg-black/40 sticky top-0 z-50">
+    <main className="min-h-screen bg-brand-bg text-clay-900 font-sans selection:bg-brand-accent/20 cursor-default pb-20">
+      <nav className="fixed top-0 w-full z-50 border-b border-black/5 backdrop-blur-xl bg-white/40">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2 group text-slate-400 hover:text-white transition-colors">
+          <Link href="/" className="flex items-center gap-2 group text-clay-500 hover:text-clay-900 transition-colors">
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" /> 
-            <span className="font-black text-xs uppercase tracking-widest">Beranda</span>
+            <span className="font-bold text-xs uppercase tracking-widest">Beranda</span>
           </Link>
           <div className="flex items-center gap-6">
              {isGuest ? (
                <div className="flex items-center gap-4">
                   <Link href="/login">
-                    <Button variant="ghost" className="text-slate-400 hover:text-white font-bold text-xs">MASUK</Button>
+                    <Button variant="ghost" className="text-clay-500 hover:text-clay-900 font-bold text-xs tracking-widest uppercase">MASUK</Button>
                   </Link>
                   <Link href="/register">
-                    <Button className="bg-primary hover:bg-primary/90 text-white font-bold text-xs rounded-xl h-9 px-4">DAFTAR</Button>
+                    <Button className="bg-brand-accent hover:bg-brand-accent2 text-brand-white font-bold text-xs rounded-xl h-10 px-6 shadow-soft tracking-widest uppercase">DAFTAR</Button>
                   </Link>
                </div>
              ) : (
                <Link href="/dashboard">
-                  <Button variant="ghost" className="h-10 text-slate-400 hover:text-white hover:bg-white/5 font-bold uppercase tracking-widest text-xs">
+                  <Button variant="ghost" className="h-10 text-clay-500 hover:text-clay-900 hover:bg-black/5 font-bold uppercase tracking-widest text-xs transition-colors">
                     <Layout className="w-4 h-4 mr-2" /> Dashboard
                   </Button>
                </Link>
@@ -382,246 +328,364 @@ export default function Generate() {
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <header className="mb-14">
-           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-              <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter flex items-center gap-4">
-                 AI Workspace {isGuest && <span className="p-1 px-3 rounded-full bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase tracking-widest border border-amber-500/20">Guest Mode</span>}
+      <div className="max-w-5xl mx-auto px-6 pt-24 space-y-10">
+        <header className="text-center">
+           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+              <div className="inline-flex items-center gap-3 mb-6 px-4 py-2 bg-white/40 rounded-full border border-black/5">
+                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                 <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-accent">WORKSPACE AI TRANSMISSION</span>
+              </div>
+              <h1 className="font-serif text-6xl md:text-7xl font-bold text-clay-900 tracking-tight leading-tight mb-8">
+                 Rekayasa <span className="italic font-light text-brand-accent underline decoration-brand-gold/30">Masa Depan</span>
               </h1>
-              <p className="text-slate-500 mt-4 text-lg font-medium">
-                {isGuest ? "Coba kekuatan AI kami sekarang juga, tanpa registrasi di awal." : "Rekayasa dokumen karir Anda dengan presisi algoritma masa depan."}
+              <p className="text-clay-600 text-xl font-light max-w-2xl mx-auto leading-relaxed">
+                Transformasi resume statis Anda menjadi dokumen penakluk HR dengan algoritma prediktif sektor industri global.
               </p>
            </motion.div>
         </header>
 
-        <div className="grid lg:grid-cols-12 gap-10">
-          <div className="lg:col-span-12 xl:col-span-5 space-y-8">
-            <motion.div 
-               initial={{ opacity: 0, x: -20 }}
-               animate={{ opacity: 1, x: 0 }}
-               className="glass-dark rounded-[2.5rem] p-10 border border-white/5 space-y-10 relative overflow-hidden"
-            >
-               <div className="flex gap-2 mb-10">
-                  <div className={`h-1.5 flex-1 rounded-full ${(isGuest ? guestResumeContent : selectedResumeId) ? 'bg-primary' : 'bg-white/10'}`} />
-                  <div className={`h-1.5 flex-1 rounded-full ${jobDescription ? 'bg-primary' : 'bg-white/10'}`} />
-                  <div className={`h-1.5 flex-1 rounded-full ${result ? 'bg-primary' : 'bg-white/10'}`} />
-               </div>
+        {/* SECTION 1: RESUME DATA SOURCE */}
+        <section className="space-y-8">
+           <div className="flex items-center justify-center gap-4">
+              <div className="h-px bg-black/5 flex-1" />
+              <div className="flex items-center gap-3 px-6 py-2 bg-brand-accent/5 rounded-full border border-brand-accent/5">
+                 <FileText className="w-4 h-4 text-brand-accent" />
+                 <span className="text-[10px] font-bold uppercase tracking-widest text-brand-accent">01. DATA SUMBER RESUME</span>
+              </div>
+              <div className="h-px bg-black/5 flex-1" />
+           </div>
 
-               <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 text-primary">
-                           <FileText className="w-5 h-5" />
-                        </div>
-                        <Label className="text-xl font-black text-white tracking-tight uppercase tracking-[0.05em]">
-                           {isGuest ? "Konten Resume Anda" : "Pilih CV Utama"}
-                        </Label>
-                     </div>
+           <div className="bg-white/40 backdrop-blur-md rounded-[2.5rem] p-3 border border-black/5 shadow-sm max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5">
+                 <button onClick={() => setResumeSource("text")} className={`flex items-center gap-3 px-6 py-3.5 rounded-[1.8rem] transition-all ${resumeSource === "text" ? 'bg-brand-accent text-white shadow-xl' : 'text-clay-500 hover:bg-black/5'}`}>
+                    <FileText className="w-5 h-5 shrink-0" />
+                    <span className="text-xs font-bold uppercase tracking-widest">Unggah / Teks</span>
+                 </button>
+                 <button onClick={() => setResumeSource("linkedin")} className={`flex items-center gap-3 px-6 py-3.5 rounded-[1.8rem] transition-all ${resumeSource === "linkedin" ? 'bg-brand-accent text-white shadow-xl' : 'text-clay-500 hover:bg-black/5'}`}>
+                    <LinkIcon className="w-5 h-5 shrink-0" />
+                    <span className="text-xs font-bold uppercase tracking-widest">Profil LinkedIn</span>
+                 </button>
+                 <button onClick={() => setResumeSource("database")} className={`flex items-center gap-3 px-6 py-3.5 rounded-[1.8rem] transition-all ${resumeSource === "database" ? 'bg-brand-accent text-white shadow-xl' : 'text-clay-500 hover:bg-black/5'}`}>
+                    <Database className="w-5 h-5 shrink-0" />
+                    <span className="text-xs font-bold uppercase tracking-widest">Database Saya</span>
+                 </button>
+              </div>
 
-                     {!isGuest && (
-                       <Dialog open={isAdding} onOpenChange={setIsAdding}>
-                          <DialogTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-10 rounded-2xl bg-primary/10 hover:bg-primary/20 text-primary font-black uppercase tracking-widest text-[10px] px-4 border border-primary/20">
-                              <PlusCircle className="w-4 h-4 mr-2" /> CV Baru
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="sm:max-w-[700px] bg-slate-900 border-white/10 text-slate-200 rounded-[2.5rem]">
-                            <DialogHeader>
-                              <DialogTitle className="text-white text-3xl font-black tracking-tight">Impor Resume Utama</DialogTitle>
-                              <DialogDescription className="text-slate-500 font-medium">Unggah file PDF atau masukkan teks mentah CV Anda.</DialogDescription>
-                            </DialogHeader>
-                            <form onSubmit={handleAddCV} className="space-y-8 py-8">
-                               <div className="space-y-3">
-                                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Judul CV</Label>
-                                  <Input required value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} className="h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary px-6" placeholder="Misal: CV Senior Dev 2026" />
-                               </div>
-                               <div className="grid md:grid-cols-2 gap-8">
-                                  <div className="space-y-4">
-                                     <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Ekstraksi Cepat</Label>
-                                     <div className="border-2 border-dashed border-white/10 rounded-[2rem] p-10 flex flex-col items-center justify-center gap-4 bg-white/[0.02] hover:bg-white/5 transition-all relative group border-spacing-4">
-                                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                           <Upload className="w-8 h-8 text-primary" />
-                                        </div>
-                                        <span className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase">DROP PDF/TXT</span>
-                                        <input type="file" accept=".pdf,.txt" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer" />
-                                     </div>
-                                  </div>
-                                  <div className="space-y-3">
-                                     <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Konten Mentah</Label>
-                                     <Textarea required className="min-h-[250px] bg-white/5 border-white/10 rounded-2xl p-6 text-[10px] font-mono leading-relaxed" value={form.content} onChange={(e) => setForm({...form, content: e.target.value})} placeholder="Hasil ekstraksi teks akan muncul di sini..." />
-                                  </div>
-                               </div>
-                               <DialogFooter>
-                                  <Button type="submit" disabled={submitting || uploading} className="w-full h-16 bg-primary hover:bg-primary/90 text-white font-black text-lg rounded-2xl shadow-xl shadow-primary/20">
-                                    {submitting ? <Loader2 className="mr-3 h-6 w-6 animate-spin" /> : <Zap className="mr-3 h-6 w-6 fill-current" />}
-                                    Simpan ke Basis Data
-                                  </Button>
-                               </DialogFooter>
-                            </form>
-                          </DialogContent>
-                       </Dialog>
-                     )}
-                  </div>
-
-                  {isGuest ? (
-                    <div className="space-y-4">
-                       <Textarea 
-                          placeholder="Tempel teks CV Anda atau unggah file di bawah..."
-                          className="min-h-[200px] bg-white/5 border-white/10 rounded-2xl p-6 text-sm font-medium focus:ring-primary"
-                          value={guestResumeContent}
-                          onChange={(e) => setGuestResumeContent(e.target.value)}
-                       />
-                       <div className="flex items-center gap-4 p-4 border border-dashed border-white/10 rounded-2xl bg-white/[0.02] hover:bg-white/5 transition-all relative">
-                          <Upload className="w-5 h-5 text-primary" />
-                          <span className="text-xs font-bold text-slate-400">Atau Unggah PDF/TXT</span>
-                          <input type="file" accept=".pdf,.txt" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer" />
-                       </div>
-                       {uploading && <div className="flex items-center gap-2 justify-center"><Loader2 className="w-3 h-3 animate-spin" /><span className="text-[9px] font-black uppercase tracking-widest text-primary">Mengekstrak...</span></div>}
-                    </div>
-                  ) : (
-                    <Select onValueChange={setSelectedResumeId} value={selectedResumeId}>
-                      <SelectTrigger className="h-16 bg-white/5 border-white/10 rounded-2xl focus:ring-primary px-6 text-slate-300 font-bold">
-                        <SelectValue placeholder="Pilih resume Anda..." />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-900 border-white/10 text-slate-200">
-                        {baseResumes.length === 0 ? (
-                          <SelectItem value="none" disabled>Belum ada CV yang tersimpan.</SelectItem>
-                        ) : (
-                          baseResumes.map((r) => (
-                            <SelectItem key={r.id} value={String(r.id)} className="focus:bg-primary/20 py-3 px-4 font-bold border-b border-white/5 last:border-0 cursor-pointer">
-                              {r.title}
-                            </SelectItem>
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
-                  )}
-               </div>
-
-               <div className="space-y-6">
-                  <div className="flex items-center gap-4">
-                     <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 text-primary">
-                        <Zap className="w-5 h-5 fill-current" />
-                     </div>
-                     <Label className="text-xl font-black text-white tracking-tight uppercase tracking-[0.05em]">Mode Kerja AI</Label>
-                  </div>
-                  <div className="grid grid-cols-3 gap-3 p-1.5 bg-white/5 rounded-[2rem] border border-white/5">
-                     {[
-                       { id: "resume", label: "RESUME", icon: Layout },
-                       { id: "cover-letter", label: "SURAT", icon: MessageSquare },
-                       { id: "interview-prep", label: "PREP", icon: Search },
-                     ].map(tab => (
-                       <button
-                         key={tab.id}
-                         onClick={() => setActiveTab(tab.id)}
-                         className={`flex flex-col items-center gap-2 py-4 rounded-[1.5rem] transition-all duration-300 ${activeTab === tab.id ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105 z-10' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
-                       >
-                          <tab.icon className="w-5 h-5" />
-                          <span className="text-[10px] font-black uppercase tracking-widest">{tab.label}</span>
-                       </button>
-                     ))}
-                  </div>
-               </div>
-
-               <div className="space-y-6">
-                  <div className="flex items-center gap-4">
-                     <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 text-primary">
-                        <Terminal className="w-5 h-5" />
-                     </div>
-                     <Label className="text-xl font-black text-white tracking-tight uppercase tracking-[0.05em]">Target & Persyaratan</Label>
-                  </div>
-                  <Textarea
-                    placeholder="Tempel deskripsi pekerjaan di sini..."
-                    className="relative min-h-[250px] bg-[#0F172A] border-white/5 rounded-[2rem] p-8 text-sm leading-relaxed resize-none focus:ring-0 focus:border-primary/40 text-slate-300 font-medium"
-                    value={jobDescription}
-                    onChange={(e) => setJobDescription(e.target.value)}
-                  />
-               </div>
-
-               <AnimatePresence>
-                  {errorMessage && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="rounded-2xl bg-red-500/10 border border-red-500/20 p-5 flex items-center gap-4 text-red-500">
-                       <AlertCircle className="w-6 h-6 shrink-0" />
-                       <p className="text-xs font-black uppercase tracking-widest">{errorMessage}</p>
-                    </motion.div>
-                  )}
-               </AnimatePresence>
-
-               <Button onClick={handleGenerate} disabled={loading} className="w-full h-20 text-xl font-black bg-primary hover:bg-primary/90 text-white rounded-3xl shadow-xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                 {loading ? <><Loader2 className="mr-4 h-7 w-7 animate-spin" /> MENGHUBUNGKAN...</> : <><Zap className="mr-4 h-7 w-7 fill-current" /> EKSEKUSI OPTIMASI</>}
-               </Button>
-            </motion.div>
-          </div>
-
-          <div className="lg:col-span-12 xl:col-span-7 relative">
-            <AnimatePresence mode="wait">
-              {loading ? (
-                <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-dark rounded-[2.5rem] h-full min-h-[700px] flex flex-col items-center justify-center p-12 text-center">
-                  <div className="relative mb-10"><div className="w-32 h-32 rounded-full border-[6px] border-primary/20 border-t-primary animate-spin" /><Sparkles className="absolute inset-0 m-auto w-10 h-10 text-primary animate-pulse" /></div>
-                  <h3 className="text-3xl font-black text-white mb-4 tracking-tighter uppercase">Menjalankan Engine AI...</h3>
-                  <div className="mt-16 w-full max-w-md bg-black/60 rounded-[2rem] p-8 font-mono text-[10px] text-slate-500 text-left space-y-2 border border-white/5 italic">
-                     <p>[OK] GUEST_MODE_OVERRIDE_ACTIVE</p>
-                     <p>[OK] PARSING_SEMANTIC_MATCH</p>
-                     <p className="animate-pulse">[RUNNING] TAILORING_EXPERIENCE...</p>
-                  </div>
-                </motion.div>
-              ) : result ? (
-                <motion.div key="result" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="glass-dark rounded-[2.5rem] h-full min-h-[800px] flex flex-col border border-white/5 overflow-hidden">
-                  <div className="px-10 py-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/[0.02]">
-                    <div className="flex items-center gap-4">
-                       <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center"><Terminal className="w-7 h-7 text-primary" /></div>
-                       <div><h3 className="text-lg font-black text-white uppercase tracking-widest italic">{activeTab} SIAP</h3><p className="text-[10px] text-emerald-400 font-black flex items-center gap-2 uppercase tracking-widest"><CheckCircle2 className="w-4 h-4" /> Selesai</p></div>
-                    </div>
-                    <div className="flex gap-4">
-                      <Button size="lg" onClick={downloadPDF} className={`h-14 px-8 rounded-2xl ${isGuest ? 'bg-slate-800 text-slate-500' : 'bg-emerald-500 text-white'} font-black uppercase tracking-widest text-[10px]`}>
-                        <Download className="w-5 h-5 mr-3" /> Unduh PDF
-                      </Button>
-                      <Button variant="ghost" size="lg" onClick={copyToClipboard} className="h-14 px-6 rounded-2xl text-slate-400 hover:text-white font-black uppercase tracking-widest text-[10px]">
-                        {copied ? <CheckCircle2 className="w-5 h-5 mr-3" /> : <Copy className="w-5 h-5 mr-3" />} {copied ? "SALIN!" : "SALIN"}
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="flex-1 p-12 overflow-y-auto bg-black/40 custom-scrollbar relative">
-                    <div className="max-w-3xl mx-auto whitespace-pre-wrap text-base leading-[1.8] text-slate-300 font-medium">
-                       {result}
-                    </div>
-                    
-                    {isGuest && (
-                      <div className="absolute bottom-0 left-0 w-full p-10 bg-gradient-to-t from-[#020617] via-[#020617]/95 to-transparent pt-32 flex flex-col items-center">
-                         <div className="glass-accent p-10 rounded-[3rem] border border-primary/30 max-w-xl w-full text-center shadow-[0_0_100px_rgba(139,92,246,0.2)]">
-                            <ShieldAlert className="w-12 h-12 text-primary mx-auto mb-6" />
-                            <h4 className="text-2xl font-black text-white mb-4 tracking-tight uppercase italic">Simpan Hasil Ini Sekarang?</h4>
-                            <p className="text-indigo-200/60 font-medium text-sm mb-8 leading-relaxed">
-                              Sebagai tamu, hasil ini tidak akan tersimpan secara permanen. Daftar sekarang untuk mengunduh PDF premium, menyimpan riwayat, dan mendapatkan 3 kredit gratis tambahan!
-                            </p>
-                            <div className="flex flex-col sm:flex-row gap-4">
-                               <Link href="/register" className="flex-1">
-                                  <Button className="w-full h-14 bg-primary hover:bg-primary/90 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20">
-                                     <UserPlus className="w-4 h-4 mr-2" /> Daftar Gratis
-                                  </Button>
-                               </Link>
-                               <Link href="/login" className="flex-1">
-                                  <Button variant="outline" className="w-full h-14 border-white/10 hover:bg-white/5 text-white font-black text-xs uppercase tracking-widest rounded-2xl">
-                                     <LogIn className="w-4 h-4 mr-2" /> Masuk
-                                  </Button>
-                               </Link>
-                            </div>
-                         </div>
-                      </div>
+              <div className="p-6 md:p-8">
+                 <AnimatePresence mode="wait">
+                    {resumeSource === "text" && (
+                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
+                          <div className="relative group">
+                             <Textarea 
+                                placeholder="Tempel teks CV Anda atau unggah file di bawah..."
+                                className="min-h-[240px] bg-white/60 border-black/5 rounded-[1.8rem] p-8 text-base font-medium focus:ring-brand-accent placeholder:text-clay-300 shadow-inner"
+                                value={guestResumeContent}
+                                onChange={(e) => setGuestResumeContent(e.target.value)}
+                             />
+                             <div className="absolute top-6 right-8 text-xs font-bold text-clay-300 uppercase tracking-widest">Kandungan Teks</div>
+                          </div>
+                          <div className="flex items-center gap-4 p-6 border-2 border-dashed border-black/10 rounded-[1.8rem] bg-white/40 hover:bg-white/60 transition-all relative group shadow-sm">
+                             <Upload className="w-6 h-6 text-brand-accent" />
+                             <span className="text-xs font-bold text-clay-500 uppercase tracking-widest">Klik atau Tarik File PDF / TXT ke sini</span>
+                             <span className="text-xs font-bold uppercase tracking-widest">Klik atau Tarik File PDF / TXT ke sini</span>
+                             <input type="file" accept=".pdf,.txt" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer" />
+                          </div>
+                       </motion.div>
                     )}
+
+                    {resumeSource === "linkedin" && (
+                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6 py-2">
+                          <div className="text-center space-y-3 max-w-sm mx-auto">
+                             <div className="w-14 h-14 rounded-2xl bg-[#0077B5]/10 flex items-center justify-center mx-auto mb-4"><LinkIcon className="w-6 h-6 text-[#0077B5]" /></div>
+                             <h4 className="font-serif text-2xl font-bold text-clay-900">Impor Otomatis LinkedIn</h4>
+                             <p className="text-clay-500 text-sm font-light">Masukkan URL profil publik LinkedIn Anda untuk menarik data profil secara instan.</p>
+                          </div>
+                          <div className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
+                             <Input 
+                                placeholder="linkedin.com/in/username" 
+                                className="h-14 bg-white/60 border-black/5 rounded-xl px-6 focus:ring-brand-accent font-medium shadow-soft flex-1"
+                                value={linkedinUrl}
+                                onChange={(e) => setLinkedinUrl(e.target.value)}
+                             />
+                             <Button onClick={handleLinkedInExtract} disabled={uploading} className="h-14 px-8 bg-brand-accent hover:bg-brand-accent2 text-white font-bold rounded-xl shadow-xl shadow-brand-accent/20 transition-all group">
+                                {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                                <span className="ml-2 uppercase tracking-widest text-[10px]">Tarik Data</span>
+                             </Button>
+                          </div>
+                          <div className="max-w-lg mx-auto p-4 bg-brand-accent/5 rounded-xl border border-brand-accent/10 flex gap-3 items-start">
+                             <AlertCircle className="w-4 h-4 text-brand-accent shrink-0 mt-0.5" />
+                             <p className="text-xs text-clay-500 leading-relaxed">
+                                <span className="font-bold text-brand-accent block mb-0.5 uppercase tracking-widest text-[10px]">Tips Automasi:</span>
+                                Jika profil Anda terhalang login-wall, Anda dapat mengunduh PDF profil di LinkedIn dan masukan ke tab <b>Unggah / Teks</b>.
+                             </p>
+                          </div>
+                       </motion.div>
+                    )}
+
+                    {resumeSource === "database" && (
+                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 py-2">
+                           <div className="flex items-center justify-between mb-1">
+                              <Label className="text-xs font-bold uppercase tracking-widest text-clay-400 ml-1">Koleksi Base Resume</Label>
+                              {!isGuest && (
+                                 <Button variant="ghost" size="sm" onClick={() => setIsAdding(true)} className="text-brand-accent font-bold uppercase tracking-widest text-xs h-auto py-1">
+                                    <PlusCircle className="w-3.5 h-3.5 mr-1.5" /> Tambah Manual
+                                 </Button>
+                              )}
+                           </div>
+                           <Select onValueChange={setSelectedResumeId} value={selectedResumeId}>
+                             <SelectTrigger className="h-14 bg-white/60 border-black/5 rounded-[1.2rem] focus:ring-brand-accent px-6 text-clay-600 font-bold shadow-soft">
+                               <SelectValue placeholder="Pilih resume master dari database..." />
+                             </SelectTrigger>
+                             <SelectContent className="bg-brand-bg/95 backdrop-blur-xl border-black/5 rounded-[1.2rem] shadow-xl">
+                               {baseResumes.length === 0 ? (
+                                 <SelectItem value="none" disabled className="py-3 px-5 text-clay-400 italic">Database kosong. Mohon unggah resume pertama Anda.</SelectItem>
+                               ) : (
+                                 baseResumes.map((r) => (
+                                   <SelectItem key={r.id} value={String(r.id)} className="focus:bg-brand-accent focus:text-white py-3 px-5 font-bold border-b border-black/5 last:border-0 cursor-pointer text-sm">
+                                     {r.title}
+                                   </SelectItem>
+                                 ))
+                               )}
+                             </SelectContent>
+                           </Select>
+                        </motion.div>
+                    )}
+                 </AnimatePresence>
+              </div>
+           </div>
+        </section>
+
+         <div className="flex justify-center flex-col items-center gap-2">
+            <div className="w-px h-8 bg-gradient-to-b from-black/5 to-black/20" />
+            <div className="w-7 h-7 rounded-full bg-brand-accent/10 flex items-center justify-center text-brand-accent animate-bounce"><ArrowDown className="w-3 h-3" /></div>
+         </div>
+
+        {/* SECTION 2: JOB CRITERIA */}
+        <section className="space-y-8">
+           <div className="flex items-center justify-center gap-4">
+              <div className="h-px bg-black/5 flex-1" />
+              <div className="flex items-center gap-3 px-6 py-2 bg-brand-accent/5 rounded-full border border-brand-accent/5">
+                 <Terminal className="w-4 h-4 text-brand-accent" />
+                 <span className="text-[10px] font-bold uppercase tracking-widest text-brand-accent">02. KRITERIA PEKERJAAN TARGET</span>
+              </div>
+              <div className="h-px bg-black/5 flex-1" />
+           </div>
+
+           <div className="bg-white/40 backdrop-blur-md rounded-[2.5rem] p-8 border border-black/5 shadow-sm max-w-4xl mx-auto space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-widest text-clay-400 flex items-center gap-2"><Briefcase className="w-4 h-4" /> Posisi Jabatan</Label>
+                    <Input 
+                       placeholder="Misal: Senior Frontend Engineer" 
+                       className="h-14 bg-white/60 border-black/5 rounded-xl px-6 focus:ring-brand-accent font-medium shadow-inner text-base"
+                       value={jobPosition}
+                       onChange={(e) => setJobPosition(e.target.value)}
+                    />
+                 </div>
+                 <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-widest text-clay-400 flex items-center gap-2"><Building className="w-4 h-4" /> Nama Perusahaan</Label>
+                    <Input 
+                       placeholder="Misal: TechFlow Global Corp" 
+                       className="h-14 bg-white/60 border-black/5 rounded-xl px-6 focus:ring-brand-accent font-medium shadow-inner text-base"
+                       value={companyName}
+                       onChange={(e) => setCompanyName(e.target.value)}
+                    />
+                 </div>
+              </div>
+
+              <div className="space-y-6">
+                 <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-widest text-clay-400 flex items-center gap-2"><Layout className="w-4 h-4" /> Deskripsi Utama Pekerjaan</Label>
+                    <Textarea 
+                       placeholder="Jelaskan peran ini secara umum..." 
+                       className="min-h-[180px] bg-white/60 border-black/5 rounded-[1.5rem] p-8 text-base focus:ring-brand-accent placeholder:text-clay-300 shadow-inner"
+                       value={jobDesc}
+                       onChange={(e) => setJobDesc(e.target.value)}
+                    />
+                 </div>
+                 <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-widest text-clay-400 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Kualifikasi & Persyaratan</Label>
+                    <Textarea 
+                       placeholder="Misal: React, Node.js, 5+ tahun pengalaman..." 
+                       className="min-h-[180px] bg-white/60 border-black/5 rounded-[1.5rem] p-8 text-base focus:ring-brand-accent placeholder:text-clay-300 shadow-inner"
+                       value={jobQuals}
+                       onChange={(e) => setJobQuals(e.target.value)}
+                    />
+                 </div>
+              </div>
+           </div>
+        </section>
+
+        {/* AI ACTION SWITCHER & GENERATE */}
+        <section className="space-y-10">
+           <div className="flex flex-col items-center gap-6">
+              <div className="grid grid-cols-3 gap-3 p-1.5 bg-white/60 rounded-[2rem] border border-black/5 shadow-inner max-w-lg w-full">
+                 {[
+                   { id: "resume", label: "OPTIMIZE CV", icon: Layout },
+                   { id: "cover-letter", label: "COVER LETTER", icon: MessageSquare },
+                   { id: "interview-prep", label: "INTERVIEW PREP", icon: Search },
+                 ].map(tab => (
+                   <button
+                     key={tab.id}
+                     onClick={() => setActiveAIAction(tab.id)}
+                     className={`flex flex-col items-center gap-3 py-6 rounded-[2rem] transition-all duration-300 relative group ${activeAIAction === tab.id ? 'bg-brand-accent text-brand-white shadow-xl scale-[1.03] z-10' : 'text-clay-400 hover:text-clay-900 hover:bg-black/5'}`}
+                   >
+                      <tab.icon className={`w-5 h-5 transition-transform group-hover:scale-110 ${activeAIAction === tab.id ? 'text-brand-white' : 'text-clay-300'}`} />
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em]">{tab.label}</span>
+                      {activeAIAction === tab.id && <motion.div layoutId="active-ai" className="absolute -bottom-1 w-1 h-1 rounded-full bg-brand-gold shadow-glow" />}
+                   </button>
+                 ))}
+              </div>
+
+              <AnimatePresence>
+                 {errorMessage && (
+                   <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="rounded-2xl bg-red-50 border border-red-100 p-6 flex items-center gap-4 text-red-600 shadow-sm max-w-xl w-full">
+                      <AlertCircle className="w-6 h-6 shrink-0" />
+                      <p className="text-xs font-bold uppercase tracking-widest leading-relaxed">{errorMessage}</p>
+                   </motion.div>
+                 )}
+              </AnimatePresence>
+
+               <Button onClick={handleGenerate} disabled={loading} className="max-w-xl w-full h-24 text-2xl font-bold bg-brand-accent hover:bg-brand-accent2 text-brand-white rounded-[2rem] shadow-2xl shadow-brand-accent/20 transition-all hover:scale-[1.02] active:scale-[0.98] group relative overflow-hidden">
+                  <div className="relative z-10 flex items-center justify-center gap-6">
+                     {loading ? <Loader2 className="h-8 w-8 animate-spin" /> : <Zap className="h-8 w-8 fill-brand-gold text-brand-gold" />}
+                     <span className="tracking-tight text-xl md:text-2xl uppercase tracking-widest">{loading ? " TRANSMITTING..." : `REKAYASA ${activeAIAction.toUpperCase()}`}</span>
                   </div>
-                </motion.div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+               </Button>
+           </div>
+        </section>
+
+        {/* RESULT SECTION */}
+        <section id="result-section" className="pt-20">
+           <AnimatePresence mode="wait">
+              {loading ? (
+                  <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="bg-white/40 backdrop-blur-md rounded-[2.5rem] p-12 flex flex-col items-center justify-center text-center border border-black/5 shadow-sm min-h-[400px] max-w-4xl mx-auto">
+                     <div className="relative mb-8 flex items-center justify-center">
+                        <div className="w-32 h-32 rounded-full border-[2px] border-brand-accent/5 border-t-brand-accent animate-spin" />
+                        <Sparkles className="absolute w-8 h-8 text-brand-accent animate-pulse" />
+                     </div>
+                     <h3 className="font-serif text-2xl font-bold text-clay-900 mb-4 tracking-tight italic">Optimasi Neural Sedang Berlangsung...</h3>
+                     <div className="mt-8 w-full max-w-sm bg-black/5 rounded-2xl p-6 font-mono text-[9px] text-clay-400 text-left space-y-2 border border-black/5 italic shadow-inner">
+                        <div className="flex gap-3"><span className="text-emerald-500 font-bold">[OK]</span> <span>DATA_NODE_SECURED</span></div>
+                        <div className="flex gap-3"><span className="text-emerald-500 font-bold">[OK]</span> <span>MAPPING_JOB_ATTRIBUTES</span></div>
+                        <div className="flex gap-3"><span className="text-brand-accent font-bold animate-pulse">[RUNNING]</span> <span>RECONSTRUCTING_PROFESSIONAL_GRAPH...</span></div>
+                     </div>
+                  </motion.div>
+               ) : result ? (
+                  <motion.div key="result" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="bg-white/60 backdrop-blur-lg rounded-[2.5rem] border border-black/5 overflow-hidden shadow-2xl max-w-4xl mx-auto min-h-[600px] flex flex-col">
+                     <div className="px-10 py-8 border-b border-black/5 flex flex-col sm:flex-row items-center justify-between gap-8 bg-white/40">
+                        <div className="flex items-center gap-6">
+                           <div className="w-16 h-16 rounded-2xl bg-brand-accent/10 flex items-center justify-center shadow-soft"><Terminal className="w-8 h-8 text-brand-accent" /></div>
+                           <div>
+                              <h3 className="font-serif text-2xl font-bold text-clay-900 uppercase tracking-tight italic">{activeAIAction.toUpperCase()} SIAP</h3>
+                              <p className="text-xs text-emerald-600 font-bold flex items-center gap-2 uppercase tracking-[0.2em] mt-1"><CheckCircle2 className="w-4 h-4" /> TRANSMISI BERHASIL</p>
+                           </div>
+                        </div>
+                        <div className="flex gap-4">
+                           <Button size="lg" onClick={downloadPDF} className={`h-16 px-10 rounded-2xl ${isGuest ? 'bg-clay-200 text-clay-400' : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-xl shadow-emerald-500/20'} font-bold uppercase tracking-widest text-[10px]`}>
+                              <Download className="w-5 h-5 mr-3" /> PDF PREMIUM
+                           </Button>
+                           <Button variant="ghost" size="lg" onClick={copyToClipboard} className="h-16 px-8 rounded-2xl text-clay-500 hover:text-clay-900 hover:bg-black/5 font-bold uppercase tracking-widest text-[10px]">
+                              {copied ? <CheckCircle2 className="w-5 h-5 mr-3 text-emerald-500" /> : <Copy className="w-5 h-5 mr-3" />} {copied ? "SALIN!" : "COPY TEKS"}
+                           </Button>
+                        </div>
+                     </div>
+                     
+                     <div className="flex-1 p-10 md:p-14 font-sans selection:bg-brand-accent/20 relative overflow-hidden bg-white/50">
+                        <div className="max-w-none">
+                          <ReactMarkdown 
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              h1: ({node, ...props}) => <h1 className="font-serif text-5xl font-bold text-clay-900 mb-8 border-b-2 border-brand-accent/20 pb-4 tracking-tighter" {...props} />,
+                              h2: ({node, ...props}) => <h2 className="font-serif text-3xl font-bold text-brand-accent mt-12 mb-6 flex items-center gap-4 group" {...props}>
+                                <div className="w-1.5 h-8 bg-brand-accent rounded-full transition-transform group-hover:scale-y-110" />
+                                {props.children}
+                              </h2>,
+                              h3: ({node, ...props}) => <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-clay-500 mt-10 mb-4 bg-clay-100/50 inline-block px-4 py-1.5 rounded-lg border border-clay-200/30" {...props} />,
+                              p: ({node, ...props}) => <p className="text-lg text-clay-700 font-light leading-relaxed mb-6 text-justify" {...props} />,
+                              li: ({node, ...props}) => <li className="flex gap-4 mb-4 text-clay-600 font-light text-base leading-relaxed items-start group" {...props}>
+                                <div className="w-2 h-2 mt-2 rounded-full bg-emerald-500/40 border border-emerald-500 shrink-0 group-hover:bg-emerald-500 transition-colors shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
+                                <div>{props.children}</div>
+                              </li>,
+                              ul: ({node, ...props}) => <ul className="my-8 space-y-2" {...props} />,
+                              strong: ({node, ...props}) => <strong className="font-bold text-clay-900 px-1 py-0.5 bg-brand-gold/10 rounded-md border-b-[3px] border-brand-gold/30" {...props} />,
+                              hr: () => <div className="h-px w-full bg-gradient-to-r from-transparent via-black/5 to-transparent my-16" />
+                            }}
+                          >
+                            {result}
+                          </ReactMarkdown>
+                        </div>
+                        
+                        {isGuest && (
+                          <div className="mt-20 p-12 bg-white/90 border border-brand-accent/10 rounded-[2.5rem] text-center shadow-2xl space-y-8 relative overflow-hidden group">
+                             <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-brand-accent via-brand-gold to-brand-accent animate-gradient-x" />
+                             <div className="w-20 h-20 rounded-[2rem] bg-brand-accent/10 flex items-center justify-center mx-auto mb-6 shadow-soft group-hover:scale-110 transition-transform duration-500">
+                                <Zap className="w-10 h-10 text-brand-accent fill-brand-accent" />
+                             </div>
+                             <h4 className="font-serif text-4xl font-bold text-clay-900 tracking-tight leading-tight uppercase italic">Simpan <span className="text-brand-accent underline decoration-brand-gold/30">Otomasi</span> Ini</h4>
+                             <p className="text-clay-500 text-base font-light max-w-sm mx-auto leading-relaxed">Jangan biarkan hasil brilian ini menghilang. Permanenkan CV Anda di database kami untuk aksesibilitas 24/7 dan fitur premium lainnya.</p>
+                             <div className="flex flex-col sm:flex-row gap-5 pt-6">
+                                <Link href="/register" className="flex-1 h-full">
+                                   <Button className="w-full h-16 bg-brand-accent hover:bg-brand-accent2 text-white font-bold rounded-2xl shadow-xl shadow-brand-accent/20 text-xs tracking-widest uppercase transition-all hover:-translate-y-1">DAFTAR SEKARANG</Button>
+                                </Link>
+                                <Link href="/login" className="flex-1 h-full">
+                                   <Button variant="outline" className="w-full h-16 border-black/5 hover:bg-black/5 text-clay-900 font-bold rounded-2xl text-xs tracking-widest uppercase transition-all">LOGIN</Button>
+                                </Link>
+                             </div>
+                             <div className="absolute bottom-4 left-0 w-full flex justify-center gap-1 opacity-20">
+                                {[1,2,3,4,5].map(i => <div key={i} className="w-1 h-1 rounded-full bg-clay-400" />)}
+                             </div>
+                          </div>
+                        )}
+                     </div>
+                  </motion.div>
               ) : (
-                <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-dark rounded-[2.5rem] h-full min-h-[700px] flex flex-col items-center justify-center p-12 text-center">
-                   <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mb-10 border border-white/5"><Terminal className="w-12 h-12 text-slate-700" /></div>
-                   <h3 className="text-3xl font-black text-white mb-4 tracking-tighter italic uppercase">Engine Siap</h3>
-                   <p className="text-slate-500 text-lg font-medium max-w-sm mx-auto leading-relaxed">Masukkan data pada panel kiri dan biarkan AI HireReady mengoptimasi karir Anda secara instan.</p>
-                </motion.div>
+                 <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20 grayscale opacity-40">
+                    <div className="w-24 h-24 bg-white rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-soft"><Terminal className="w-10 h-10 text-clay-300" /></div>
+                    <p className="font-serif text-2xl font-bold text-clay-400 italic">Menunggu Transmisi Data...</p>
+                 </motion.div>
               )}
-            </AnimatePresence>
-          </div>
-        </div>
+           </AnimatePresence>
+        </section>
       </div>
+
+      <Dialog open={isAdding} onOpenChange={setIsAdding}>
+         <DialogContent className="sm:max-w-[700px] bg-brand-bg/95 backdrop-blur-xl border-black/5 text-clay-900 rounded-[2.5rem] shadow-2xl p-0 overflow-hidden">
+            <div className="h-2 w-full bg-brand-accent" />
+            <div className="p-10 space-y-8">
+               <DialogHeader>
+                  <DialogTitle className="font-serif text-3xl font-bold">Basis Resume Baru</DialogTitle>
+                  <DialogDescription>Tambahkan deskripsi profil Anda sebagai template utama.</DialogDescription>
+               </DialogHeader>
+               <div className="space-y-6">
+                  <div className="space-y-3">
+                     <Label className="text-[10px] font-bold uppercase tracking-widest text-clay-400">Judul Referensi</Label>
+                     <Input 
+                        value={form.title} 
+                        onChange={(e) => setForm({...form, title: e.target.value})} 
+                        className="h-14 bg-white/60 border-black/5 rounded-2xl px-6 font-medium focus:ring-brand-accent"
+                        placeholder="Misal: Resume Senior Dev 2026" 
+                     />
+                  </div>
+                  <div className="space-y-3">
+                     <Label className="text-[10px] font-bold uppercase tracking-widest text-clay-400">Konten Teks Mentah</Label>
+                     <Textarea 
+                        value={form.content} 
+                        onChange={(e) => setForm({...form, content: e.target.value})} 
+                        className="min-h-[250px] bg-white/60 border-black/5 rounded-[1.5rem] p-6 text-[10px] font-mono leading-relaxed"
+                        placeholder="Tempel teks CV di sini..." 
+                     />
+                  </div>
+               </div>
+               <DialogFooter>
+                  <Button onClick={handleAddCV} disabled={submitting} className="w-full h-16 bg-brand-accent hover:bg-brand-accent2 text-brand-white font-bold rounded-2xl shadow-xl shadow-brand-accent/20">
+                     {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "SIMPAN KE DATABASE"}
+                  </Button>
+               </DialogFooter>
+            </div>
+         </DialogContent>
+      </Dialog>
     </main>
   );
 }

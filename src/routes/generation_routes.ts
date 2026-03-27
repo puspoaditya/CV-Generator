@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
-import { handleGenerateResume, handleGenerateCoverLetter, handleGenerateInterviewPrep, handleGuestGenerate } from "../controllers/generation_controller";
+import { handleGenerateResume, handleGenerateCoverLetter, handleGenerateInterviewPrep, handleGuestGenerate, handleLinkedInExtract, handleGeneratePDF } from "../controllers/generation_controller";
 
 export const generationRoutes = new Elysia({ prefix: "/generate" })
   .post("/guest", handleGuestGenerate as any, {
@@ -31,5 +31,15 @@ export const generationRoutes = new Elysia({ prefix: "/generate" })
     body: t.Object({
       baseResumeId: t.Number(),
       jobDescription: t.String(),
+    }),
+  })
+  .post("/extract-linkedin", handleLinkedInExtract as any, {
+    body: t.Object({
+      url: t.String(),
+    }),
+  })
+  .post("/export-pdf", handleGeneratePDF as any, {
+    body: t.Object({
+      content: t.String(),
     }),
   });

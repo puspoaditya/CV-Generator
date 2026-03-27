@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CVCraft — CV yang Bicara untuk Kamu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300;1,9..144,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gray-50:  #D8E8F5;
+      --gray-100: #C8D8E8;
+      --gray-200: #B8BFC8;
+      --gray-300: #A8B0BA;
+      --gray-400: #8A94A0;
+      --gray-500: #6B7880;
+      --gray-600: #4A5663;
+      --gray-700: #3A4550;
+      --gray-800: #253545;
+      --gray-900: #0F1923;
+      --bg:       #B8BFC8;
+      --surface:  #C4CAD2;
+      --surface2: #A8B0BA;
+      --accent:   #1C3A5A;
+      --accent2:  #254A70;
+      --accent-light: #4A7AA0;
+      --gold:     #8A9EB8;
+      --white:    #D8E8F5;
+      --free-color:  #1C3A5A;
+      --pro-color:   #1C3A5A;
+      --elite-color: #253545;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--gray-900);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ─── CUSTOM CURSOR ─── */
+    .cursor-dot {
+      position: fixed;
+      width: 8px; height: 8px;
+      background: var(--gray-900);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s;
+    }
+    .cursor-ring {
+      position: fixed;
+      width: 36px; height: 36px;
+      border: 1.5px solid rgba(28,28,28,0.45);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: all 0.18s ease;
+    }
+    body:has(a:hover) .cursor-ring,
+    body:has(button:hover) .cursor-ring {
+      width: 52px; height: 52px;
+      border-color: var(--accent);
+      background: rgba(28,58,90,0.08);
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 56px;
+      background: rgba(214,208,200,0.82);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      transition: padding 0.3s;
+    }
+    .logo {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: var(--gray-900);
+      letter-spacing: -0.02em;
+    }
+    .logo span { font-style: italic; font-weight: 300; color: var(--accent); }
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.83rem;
+      font-weight: 500;
+      color: var(--gray-700);
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      transition: color 0.2s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 0; height: 1px;
+      background: var(--gray-900);
+      transition: width 0.25s;
+    }
+    .nav-links a:hover { color: var(--gray-900); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta {
+      background: var(--accent) !important;
+      color: var(--gray-50) !important;
+      padding: 9px 22px;
+      border-radius: 8px;
+      font-weight: 600 !important;
+      font-size: 0.8rem !important;
+      transition: background 0.2s, transform 0.15s !important;
+    }
+    .nav-cta::after { display: none !important; }
+    .nav-cta:hover { background: var(--accent2) !important; transform: translateY(-1px); }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 140px 56px 80px;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(15,25,35,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15,25,35,0.07) 1px, transparent 1px);
+      background-size: 52px 52px;
+      mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.16;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+    .blob-1 { width: 520px; height: 520px; background: #4A6880; top: -100px; left: -140px; animation-delay: 0s; }
+    .blob-2 { width: 380px; height: 380px; background: #1C3A5A; bottom: -80px; right: -80px; animation-delay: -4s; }
+    .blob-3 { width: 280px; height: 280px; background: #6A8AA0; top: 40%; left: 60%; animation-delay: -8s; }
+
+    @keyframes drift {
+      0%   { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(40px, 30px) scale(1.06); }
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.35);
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 30px;
+      padding: 6px 16px 6px 8px;
+      font-size: 0.73rem;
+      font-weight: 500;
+      color: var(--gray-700);
+      margin-bottom: 32px;
+      backdrop-filter: blur(8px);
+      animation: fadeDown 0.8s ease both;
+    }
+    .badge-dot {
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.6rem;
+      color: var(--gray-50);
+    }
+
+    .hero h1 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2.8rem, 6vw, 5.2rem);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      color: var(--gray-900);
+      max-width: 860px;
+      animation: fadeUp 1s ease 0.2s both;
+    }
+    .hero h1 em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--gray-600);
+    }
+
+    .typewriter-wrap {
+      display: block;
+      min-height: 1.15em;
+      margin-top: 8px;
+      animation: fadeUp 1s ease 0.4s both;
+    }
+    #typewriter {
+      color: var(--accent);
+      font-style: normal;
+      font-weight: 700;
+      position: relative;
+    }
+    #typewriter::after {
+      content: '|';
+      color: var(--accent-light);
+      animation: blink 0.75s step-end infinite;
+      margin-left: 2px;
+      font-weight: 300;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .hero-sub {
+      max-width: 540px;
+      font-size: 1rem;
+      font-weight: 300;
+      color: var(--gray-700);
+      line-height: 1.75;
+      margin-top: 28px;
+      animation: fadeUp 1s ease 0.55s both;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 42px;
+      animation: fadeUp 1s ease 0.7s both;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--gray-50);
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border: none;
+      cursor: none;
+      letter-spacing: 0.02em;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(28,58,90,0.28);
+    }
+    .btn-primary:hover {
+      background: var(--accent2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(28,58,90,0.35);
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.35);
+      color: var(--gray-800);
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      border: 1px solid rgba(0,0,0,0.12);
+      cursor: none;
+      backdrop-filter: blur(8px);
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.55);
+      transform: translateY(-2px);
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 48px;
+      margin-top: 64px;
+      padding-top: 40px;
+      border-top: 1px solid rgba(0,0,0,0.1);
+      animation: fadeUp 1s ease 0.85s both;
+    }
+    .stat-num {
+      font-family: 'Fraunces', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--gray-600);
+      margin-top: 5px;
+      font-weight: 400;
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── SECTION SHARED ─── */
+    section { padding: 100px 56px; }
+    .sec-tag {
+      font-size: 0.67rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gray-600);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .sec-tag::before { content: ''; width: 24px; height: 1px; background: currentColor; }
+    .sec-h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      font-weight: 700;
+      line-height: 1.12;
+      letter-spacing: -0.025em;
+      color: var(--gray-900);
+    }
+    .sec-h2 em { font-style: italic; font-weight: 300; color: var(--gray-600); }
+    .sec-p {
+      font-size: 0.92rem;
+      color: var(--gray-700);
+      font-weight: 300;
+      line-height: 1.8;
+      max-width: 480px;
+      margin-top: 14px;
+    }
+
+    /* ─── REVEAL ─── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── PAIN SECTION ─── */
+    .pain { background: var(--gray-800); color: var(--gray-50); }
+    .pain-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .pain .sec-tag { color: var(--gray-300); }
+    .pain .sec-h2 { color: var(--gray-50); max-width: 700px; margin: 0 auto; }
+    .pain .sec-h2 em { color: var(--gray-400); }
+    .pain-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-top: 52px;
+    }
+    .pain-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 28px 24px;
+      text-align: left;
+    }
+    .pain-icon { font-size: 1.6rem; margin-bottom: 14px; }
+    .pain-card h4 {
+      font-family: 'Fraunces', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gray-100);
+      margin-bottom: 8px;
+    }
+    .pain-card p {
+      font-size: 0.8rem;
+      color: var(--gray-400);
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    /* ─── FEATURES ─── */
+    .features { background: var(--surface); }
+    .features-header { text-align: center; margin-bottom: 64px; }
+    .features-header .sec-p { margin: 14px auto 0; }
+
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .feat-card {
+      background: var(--bg);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 20px;
+      padding: 32px 28px;
+      transition: transform 0.25s, box-shadow 0.25s, background 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+    .feat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(28,58,90,0.3), transparent);
+      transition: opacity 0.3s;
+      opacity: 0;
+    }
+    .feat-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+      background: var(--gray-50);
+    }
+    .feat-card:hover::before { opacity: 1; }
+    .feat-icon {
+      width: 46px; height: 46px;
+      background: var(--accent);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+    }
+    .feat-card h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+    .feat-card p {
+      font-size: 0.82rem;
+      color: var(--gray-700);
+      line-height: 1.75;
+      font-weight: 300;
+    }
+    .feat-tag {
+      display: inline-block;
+      margin-top: 16px;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .tag-free  { background: rgba(28,58,90,0.1);  color: var(--accent); }
+    .tag-pro   { background: rgba(28,58,90,0.15); color: var(--accent2); }
+    .tag-elite { background: rgba(37,53,69,0.12); color: var(--gray-800); }
+
+    /* ─── HOW IT WORKS ─── */
+    .how { background: var(--bg); }
+    .how-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .steps { display: grid; gap: 0; }
+    .step {
+      display: flex;
+      gap: 22px;
+      padding: 28px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      transition: padding-left 0.3s;
+      cursor: default;
+    }
+    .step:last-child { border-bottom: none; }
+    .step:hover { padding-left: 8px; }
+    .step-num {
+      font-family: 'Fraunces', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--gray-300);
+      line-height: 1;
+      flex-shrink: 0;
+      width: 48px;
+      transition: color 0.3s;
+    }
+    .step:hover .step-num { color: var(--accent); }
+    .step-content h4 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 6px;
+    }
+    .step-content p {
+      font-size: 0.8rem;
+      color: var(--gray-600);
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    /* mock CV panel */
+    .mock-panel {
+      background: var(--surface);
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.5);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.5);
+      overflow: hidden;
+    }
+    .mock-bar {
+      background: var(--surface2);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    .mock-dot { width: 11px; height: 11px; border-radius: 50%; }
+    .mock-body { padding: 24px; }
+    .mock-section-label {
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+      margin-top: 16px;
+    }
+    .mock-section-label:first-child { margin-top: 0; }
+    .mock-cv-line {
+      height: 8px;
+      border-radius: 4px;
+      background: var(--gray-300);
+      margin-bottom: 6px;
+      opacity: 0.6;
+    }
+    .mock-cv-line.highlight {
+      background: var(--accent);
+      opacity: 0.4;
+      animation: pulse-line 2s ease-in-out infinite;
+    }
+    @keyframes pulse-line {
+      0%,100% { opacity: 0.4; }
+      50% { opacity: 0.7; }
+    }
+    .mock-cv-line.short { width: 60%; }
+    .mock-cv-line.medium { width: 82%; }
+    .mock-cv-line.full { width: 100%; }
+    .mock-keyword-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 10px 0;
+    }
+    .mock-keyword {
+      font-size: 0.62rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: rgba(28,58,90,0.12);
+      color: var(--accent);
+      border: 1px solid rgba(28,58,90,0.2);
+    }
+    .mock-keyword.matched {
+      background: var(--accent);
+      color: var(--gray-50);
+      border-color: transparent;
+    }
+    .typing-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0 4px;
+    }
+    .typing-dots { display: flex; gap: 4px; }
+    .typing-dots span {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--gray-500);
+      animation: typedot 1.2s ease-in-out infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typedot {
+      0%,80%,100% { transform: scale(0.7); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+    .typing-label { font-size: 0.68rem; color: var(--gray-600); }
+    .mock-ai-badge {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.58rem;
+      font-weight: 700;
+      color: var(--gray-50);
+    }
+
+    /* ─── PRICING ─── */
+    .pricing { background: var(--surface); }
+    .pricing-header { text-align: center; margin-bottom: 52px; }
+    .pricing-header .sec-p { margin: 14px auto 0; }
+
+    .price-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .price-card {
+      background: var(--bg);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 20px;
+      padding: 36px 28px;
+      transition: transform 0.25s, box-shadow 0.25s;
+      position: relative;
+    }
+    .price-card:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
+
+    /* Free */
+    .price-card.free { border-top: 3px solid var(--accent); }
+    /* Pro */
+    .price-card.pro {
+      background: var(--accent);
+      border-color: transparent;
+      border-top: 3px solid var(--accent-light);
+      color: var(--gray-50);
+    }
+    .price-card.pro .price-desc,
+    .price-card.pro .price-feat { color: rgba(216,232,245,0.65); }
+    /* Elite */
+    .price-card.elite { border-top: 3px solid var(--gray-700); }
+
+    .featured-label {
+      position: absolute;
+      top: -13px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--gray-800);
+      color: var(--gray-50);
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 20px;
+    }
+    .price-plan {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray-600);
+      margin-bottom: 14px;
+    }
+    .price-card.pro .price-plan { color: rgba(216,232,245,0.6); }
+    .price-card.elite .price-plan { color: var(--gray-600); }
+    .price-amount {
+      font-family: 'Fraunces', serif;
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .price-card.pro .price-amount { color: var(--gray-50); }
+    .price-amount sup { font-size: 1.1rem; vertical-align: super; }
+    .price-desc { font-size: 0.78rem; color: var(--gray-600); margin: 10px 0 24px; line-height: 1.6; font-weight: 300; }
+    .price-feats { display: grid; gap: 10px; margin-bottom: 28px; }
+    .price-feat {
+      font-size: 0.78rem;
+      color: var(--gray-700);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.5;
+    }
+    .price-feat::before {
+      content: '✓';
+      width: 18px; height: 18px;
+      background: rgba(0,0,0,0.07);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .price-card.pro .price-feat::before { background: rgba(255,255,255,0.15); color: var(--gray-50); }
+    .price-btn {
+      width: 100%;
+      padding: 13px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border: none;
+      cursor: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .price-btn:hover { transform: translateY(-1px); }
+    .price-btn-free   { background: var(--accent); color: var(--gray-50); }
+    .price-btn-free:hover { background: var(--accent2); }
+    .price-btn-pro    { background: var(--gray-50); color: var(--accent); }
+    .price-btn-pro:hover { background: #EEF4FA; }
+    .price-btn-elite  { background: var(--accent); color: var(--gray-50); }
+    .price-btn-elite:hover { background: var(--accent2); }
+
+    /* ─── TESTIMONIALS ─── */
+    .testi { background: var(--bg); }
+    .testi-header { text-align: center; margin-bottom: 52px; }
+    .testi-header .sec-p { margin: 14px auto 0; }
+    .testi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .testi-card {
+      background: var(--surface);
+      border: 1px solid rgba(0,0,0,0.07);
+      border-radius: 20px;
+      padding: 30px 26px;
+      transition: transform 0.25s, box-shadow 0.25s;
+    }
+    .testi-card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px rgba(0,0,0,0.09); }
+    .testi-stars { color: var(--gold); font-size: 0.85rem; margin-bottom: 14px; letter-spacing: 2px; }
+    .testi-quote {
+      font-size: 0.84rem;
+      color: var(--gray-700);
+      line-height: 1.8;
+      font-weight: 300;
+      font-style: italic;
+      margin-bottom: 20px;
+    }
+    .testi-author { display: flex; align-items: center; gap: 12px; }
+    .testi-av {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--gray-50);
+      flex-shrink: 0;
+    }
+    .testi-name { font-size: 0.82rem; font-weight: 600; color: var(--gray-900); }
+    .testi-role { font-size: 0.72rem; color: var(--gray-600); margin-top: 2px; }
+
+    /* ─── CTA SECTION ─── */
+    .cta-section {
+      background: var(--accent);
+      padding: 100px 56px;
+      text-align: center;
+    }
+    .cta-inner { max-width: 600px; margin: 0 auto; }
+    .cta-section h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 700;
+      color: var(--gray-50);
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+    }
+    .cta-section h2 em {
+      font-style: italic;
+      font-weight: 300;
+      color: rgba(240,237,232,0.65);
+    }
+    .cta-section p {
+      color: rgba(240,237,232,0.7);
+      font-size: 0.95rem;
+      font-weight: 300;
+      margin-top: 18px;
+      line-height: 1.7;
+    }
+    .cta-btns {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      margin-top: 38px;
+    }
+    .cta-btn-white {
+      background: var(--gray-50);
+      color: var(--accent);
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border: none;
+      cursor: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .cta-btn-white:hover { background: #fff; transform: translateY(-2px); }
+    .cta-btn-ghost {
+      background: transparent;
+      color: var(--gray-50);
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      border: 1px solid rgba(255,255,255,0.35);
+      cursor: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .cta-btn-ghost:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--gray-900);
+      padding: 64px 56px 32px;
+    }
+    .footer-top {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 48px;
+      padding-bottom: 48px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .footer-brand .logo { color: var(--gray-50); }
+    .footer-brand p {
+      font-size: 0.8rem;
+      color: var(--gray-500);
+      line-height: 1.7;
+      margin-top: 14px;
+      font-weight: 300;
+    }
+    .footer-col h5 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray-400);
+      margin-bottom: 18px;
+    }
+    .footer-col a {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--gray-500);
+      text-decoration: none;
+      margin-bottom: 10px;
+      transition: color 0.2s;
+    }
+    .footer-col a:hover { color: var(--gray-200); }
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--gray-600);
+    }
+  </style>
+</head>
+<body>
+
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">CV<span>Craft</span></div>
+  <ul class="nav-links">
+    <li><a href="#features">Fitur</a></li>
+    <li><a href="#how">Cara Kerja</a></li>
+    <li><a href="#pricing">Harga</a></li>
+    <li><a href="#testi">Testimoni</a></li>
+    <li><a href="#" class="nav-cta">Mulai Gratis</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-grid"></div>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="hero-badge">
+    <div class="badge-dot">✦</div>
+    Didukung AI · Tanpa berbohong, cukup pilih diksi yang tepat
+  </div>
+
+  <h1>
+    Satu CV jadi banyak versi,<br>
+    <em>tanpa kerja</em>
+    <span class="typewriter-wrap"><span id="typewriter">manual.</span></span>
+  </h1>
+
+  <p class="hero-sub">
+    Tempel lowongan kerja, CVCraft langsung menyesuaikan bahasa, urutan, dan diksi CV kamu agar lebih relevan — tanpa mengarang fakta. Hemat jam kerja, tingkatkan peluang dipanggil.
+  </p>
+
+  <div class="hero-actions">
+    <button class="btn-primary">Optimalkan CV Sekarang →</button>
+    <button class="btn-secondary">Lihat Demo</button>
+  </div>
+
+  <div class="hero-stats">
+    <div>
+      <div class="stat-num" id="s1">0</div>
+      <div class="stat-label">CV dioptimalkan bulan ini</div>
+    </div>
+    <div>
+      <div class="stat-num" id="s2">0</div>
+      <div class="stat-label">Pengguna aktif</div>
+    </div>
+    <div>
+      <div class="stat-num" id="s3">0</div>
+      <div class="stat-label">Rata-rata tingkat panggilan</div>
+    </div>
+    <div>
+      <div class="stat-num" id="s4">0</div>
+      <div class="stat-label">Lebih cepat dari bikin manual</div>
+    </div>
+  </div>
+</section>
+
+<!-- PAIN -->
+<section class="pain" id="pain">
+  <div class="pain-inner">
+    <div class="sec-tag reveal">Masalah yang Kamu Hadapi</div>
+    <h2 class="sec-h2 reveal">Kirim CV ke 20 tempat, tapi <em>isinya sama semua?</em></h2>
+
+    <div class="pain-cards">
+      <div class="pain-card reveal">
+        <div class="pain-icon">📋</div>
+        <h4>Syarat lowongan berbeda-beda</h4>
+        <p>Satu posisi minta "komunikasi", yang lain minta "negosiasi". Padahal kamu punya keduanya — tinggal cara penyebutannya yang harus disesuaikan.</p>
+      </div>
+      <div class="pain-card reveal" style="transition-delay:0.1s">
+        <div class="pain-icon">⏳</div>
+        <h4>Edit manual = buang waktu</h4>
+        <p>Menyesuaikan CV satu per satu butuh berjam-jam dan tetap ada risiko lupa menyesuaikan bagian tertentu. Hasilnya: CV yang masih terasa generik.</p>
+      </div>
+      <div class="pain-card reveal" style="transition-delay:0.2s">
+        <div class="pain-icon">🎯</div>
+        <h4>ATS sering tidak lolos</h4>
+        <p>Banyak perusahaan pakai sistem ATS yang menyaring keyword. CV kamu bisa gugur di tahap pertama bukan karena tidak kompeten, tapi karena kata-katanya tidak nyambung dengan job description.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="features-header reveal">
+    <div class="sec-tag">Fitur</div>
+    <h2 class="sec-h2">Tiga alat, <em>satu tujuan:</em> kamu dipanggil</h2>
+    <p class="sec-p">Dari CV hingga simulasi wawancara, semua disesuaikan dengan lowongan yang kamu tuju.</p>
+  </div>
+  <div class="feat-grid">
+
+    <div class="feat-card reveal">
+      <div class="feat-icon">📄</div>
+      <h3>CV / Resume Optimizer</h3>
+      <p>Paste CV kamu dan paste syarat lowongan. AI kami akan menyesuaikan diksi, urutan poin, dan penekanan pengalaman agar lebih relevan — tanpa menambah fakta baru. Hasilnya CV versi target yang bisa langsung diunduh.</p>
+      <span class="feat-tag tag-free">Gratis</span>
+    </div>
+
+    <div class="feat-card reveal" style="transition-delay:0.1s">
+      <div class="feat-icon">✉️</div>
+      <h3>Cover Letter Generator</h3>
+      <p>Cover letter profesional yang ditulis spesifik untuk lowongan yang kamu tuju. Bukan template basi — tapi surat yang menyebut keahlian relevan, menyinggung kebutuhan perusahaan, dan terasa personal dari paragraph pertama.</p>
+      <span class="feat-tag tag-pro">Pro</span>
+    </div>
+
+    <div class="feat-card reveal" style="transition-delay:0.2s">
+      <div class="feat-icon">🎤</div>
+      <h3>Interview Simulation Q&A</h3>
+      <p>Berlatih wawancara sebelum hari H. AI menghasilkan prediksi pertanyaan berdasarkan job description dan CV kamu, lengkap dengan panduan jawaban ideal menggunakan metode STAR. Datang interview dengan percaya diri.</p>
+      <span class="feat-tag tag-elite">Elite</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="how-inner">
+    <div class="reveal">
+      <div class="sec-tag">Cara Kerja</div>
+      <h2 class="sec-h2">Tiga langkah,<br><em>hasil yang berbeda</em></h2>
+      <p class="sec-p" style="margin-bottom:40px;">Proses yang dirancang agar kamu tidak perlu berpikir keras. Cukup paste, review, dan kirim.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-content">
+            <h4>Paste CV & Syarat Lowongan</h4>
+            <p>Masukkan CV kamu (bisa teks atau PDF) dan tempel job description dari lowongan yang kamu tuju. Tidak perlu format khusus.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-content">
+            <h4>AI Menganalisis & Menyesuaikan</h4>
+            <p>Sistem kami membaca keyword penting dari job description, lalu menyesuaikan diksi dan penekanan di CV kamu agar lebih nyambung — tetap jujur, hanya lebih tepat sasaran.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-content">
+            <h4>Review & Unduh</h4>
+            <p>Kamu tetap pemegang kendali. Review hasilnya, edit manual jika perlu, lalu unduh versi CV yang sudah dioptimalkan. Siap kirim dalam menit.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <div class="step-content">
+            <h4>Latihan Interview (Elite)</h4>
+            <p>Gunakan modul simulasi untuk berlatih menjawab pertanyaan yang kemungkinan besar muncul berdasarkan posisi dan CV kamu.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mock-panel reveal" style="transition-delay:0.2s">
+      <div class="mock-bar">
+        <div class="mock-dot" style="background:#d9534f"></div>
+        <div class="mock-dot" style="background:#f0ad4e"></div>
+        <div class="mock-dot" style="background:#5cb85c"></div>
+        <span style="font-size:0.72rem;color:var(--gray-600);margin-left:8px;font-weight:500;">CVCraft · Optimasi CV</span>
+      </div>
+      <div class="mock-body">
+        <div class="mock-section-label">Keyword dari Job Description</div>
+        <div class="mock-keyword-row">
+          <span class="mock-keyword matched">Manajemen Proyek</span>
+          <span class="mock-keyword matched">Komunikasi</span>
+          <span class="mock-keyword">Kepemimpinan</span>
+          <span class="mock-keyword matched">Data Analisis</span>
+          <span class="mock-keyword">Agile</span>
+          <span class="mock-keyword matched">Presentasi</span>
+        </div>
+
+        <div class="mock-section-label">CV Kamu (Sebelum)</div>
+        <div class="mock-cv-line full" style="opacity:0.35"></div>
+        <div class="mock-cv-line medium" style="opacity:0.3"></div>
+        <div class="mock-cv-line short" style="opacity:0.25"></div>
+
+        <div class="mock-section-label">Versi Dioptimalkan ✦</div>
+        <div class="mock-cv-line highlight full"></div>
+        <div class="mock-cv-line highlight medium"></div>
+        <div class="mock-cv-line full" style="opacity:0.5"></div>
+        <div class="mock-cv-line short" style="opacity:0.4"></div>
+
+        <div class="typing-row">
+          <div class="mock-ai-badge">AI</div>
+          <div class="typing-dots">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="typing-label">Menyesuaikan diksi pengalaman kerja...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="pricing-header reveal">
+    <div class="sec-tag">Harga</div>
+    <h2 class="sec-h2">Mulai gratis, <em>upgrade sesuai kebutuhan</em></h2>
+    <p class="sec-p">Tidak perlu kartu kredit untuk memulai. Bayar hanya ketika kamu butuh lebih.</p>
+  </div>
+  <div class="price-grid">
+
+    <div class="price-card free reveal">
+      <div class="price-plan">Free</div>
+      <div class="price-amount"><sup>Rp</sup>0<sub>/bln</sub></div>
+      <div class="price-desc">Untuk kamu yang baru mulai melamar. Langsung coba, tanpa kartu kredit.</div>
+      <div class="price-feats">
+        <div class="price-feat">CV / Resume Optimizer (5x/bulan)</div>
+        <div class="price-feat">Analisis keyword dari job description</div>
+        <div class="price-feat">Unduh hasil sebagai teks</div>
+        <div class="price-feat">Template CV dasar</div>
+      </div>
+      <button class="price-btn price-btn-free">Mulai Gratis</button>
+    </div>
+
+    <div class="price-card pro reveal" style="transition-delay:0.1s">
+      <div class="featured-label">Paling Populer</div>
+      <div class="price-plan">Pro</div>
+      <div class="price-amount"><sup>Rp</sup>49K<sub>/bln</sub></div>
+      <div class="price-desc">Untuk job seeker aktif yang melamar ke banyak tempat setiap bulan.</div>
+      <div class="price-feats">
+        <div class="price-feat">CV Optimizer tidak terbatas</div>
+        <div class="price-feat">Cover Letter Generator otomatis</div>
+        <div class="price-feat">Unduh sebagai PDF & DOCX</div>
+        <div class="price-feat">Riwayat & versioning CV</div>
+        <div class="price-feat">Skor kesesuaian per lowongan</div>
+      </div>
+      <button class="price-btn price-btn-pro">Coba 7 Hari Gratis</button>
+    </div>
+
+    <div class="price-card elite reveal" style="transition-delay:0.2s">
+      <div class="price-plan">Elite</div>
+      <div class="price-amount"><sup>Rp</sup>99K<sub>/bln</sub></div>
+      <div class="price-desc">Untuk yang serius ingin pindah kerja dan ingin siap dari CV hingga wawancara.</div>
+      <div class="price-feats">
+        <div class="price-feat">Semua fitur Pro</div>
+        <div class="price-feat">Interview Simulation Q&A</div>
+        <div class="price-feat">Prediksi pertanyaan berbasis JD + CV</div>
+        <div class="price-feat">Panduan jawaban metode STAR</div>
+        <div class="price-feat">Latihan tak terbatas per lowongan</div>
+      </div>
+      <button class="price-btn price-btn-elite">Mulai Elite</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testi" id="testi">
+  <div class="testi-header reveal">
+    <div class="sec-tag">Testimoni</div>
+    <h2 class="sec-h2">Mereka sudah <em>dapat panggilan lebih banyak</em></h2>
+    <p class="sec-p">Dari fresh graduate hingga profesional yang sedang career switch, CVCraft membantu mereka tampil lebih relevan.</p>
+  </div>
+  <div class="testi-grid">
+    <div class="testi-card reveal">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"Dulu saya kirim CV yang sama ke 15 tempat dan tidak ada yang merespons. Setelah pakai CVCraft, minggu pertama langsung dapat 3 panggilan interview. Perbedaannya terasa sekali."</div>
+      <div class="testi-author">
+        <div class="testi-av">RS</div>
+        <div>
+          <div class="testi-name">Rafi Santoso</div>
+          <div class="testi-role">Marketing Executive · Pindah dari retail ke startup</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card reveal" style="transition-delay:0.1s">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"Fitur simulasi interview-nya luar biasa. Pertanyaan yang muncul di interview beneran hampir 70% sama dengan prediksi dari CVCraft. Saya jadi jauh lebih percaya diri."</div>
+      <div class="testi-author">
+        <div class="testi-av">NP</div>
+        <div>
+          <div class="testi-name">Nadya Pratiwi</div>
+          <div class="testi-role">Data Analyst · Fresh Graduate UI</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card reveal" style="transition-delay:0.2s">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"Saya pakai ini untuk career switch dari engineering ke product management. Cover letter yang dihasilkan terasa personal dan langsung ke inti — HRD bilang surat saya menonjol dibanding kandidat lain."</div>
+      <div class="testi-author">
+        <div class="testi-av">AW</div>
+        <div>
+          <div class="testi-name">Andhika Wibowo</div>
+          <div class="testi-role">Product Manager · Ex-Software Engineer</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="cta">
+  <div class="cta-inner reveal">
+    <h2>CV kamu sudah bagus.<br><em>Tinggal disesuaikan.</em></h2>
+    <p>Mulai gratis hari ini. Tidak perlu kartu kredit. Hasil pertama dalam 3 menit.</p>
+    <div class="cta-btns">
+      <button class="cta-btn-white">Optimalkan CV Sekarang →</button>
+      <button class="cta-btn-ghost">Lihat Contoh Hasil</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div class="logo">CV<span style="font-style:italic;font-weight:300;color:var(--gray-400)">Craft</span></div>
+      <p>Platform AI yang membantu job seeker Indonesia tampil lebih relevan di setiap lowongan yang mereka tuju — tanpa berbohong, tanpa kerja manual berulang.</p>
+    </div>
+    <div class="footer-col">
+      <h5>Produk</h5>
+      <a href="#">CV Optimizer</a>
+      <a href="#">Cover Letter</a>
+      <a href="#">Interview Sim</a>
+      <a href="#">Harga</a>
+    </div>
+    <div class="footer-col">
+      <h5>Perusahaan</h5>
+      <a href="#">Tentang Kami</a>
+      <a href="#">Blog</a>
+      <a href="#">Karir</a>
+      <a href="#">Press Kit</a>
+    </div>
+    <div class="footer-col">
+      <h5>Dukungan</h5>
+      <a href="#">FAQ</a>
+      <a href="#">Panduan</a>
+      <a href="#">Komunitas</a>
+      <a href="#">Kontak</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 CVCraft. Hak cipta dilindungi.</span>
+    <span>Privasi · Syarat · Cookie</span>
+  </div>
+</footer>
+
+<script>
+  // ─── CUSTOM CURSOR
+  const dot  = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function animCursor() {
+    dot.style.left  = mx + 'px';
+    dot.style.top   = my + 'px';
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
+    requestAnimationFrame(animCursor);
+  }
+  animCursor();
+
+  // ─── TYPEWRITER
+  const words = ['berulang.', 'manual.', 'dari nol.', 'lagi.'];
+  let wi = 0, ci = 0, deleting = false;
+  const el = document.getElementById('typewriter');
+  function type() {
+    const word = words[wi];
+    if (!deleting) {
+      el.textContent = word.slice(0, ++ci);
+      if (ci === word.length) { deleting = true; setTimeout(type, 1800); return; }
+      setTimeout(type, 80);
+    } else {
+      el.textContent = word.slice(0, --ci);
+      if (ci === 0) { deleting = false; wi = (wi + 1) % words.length; setTimeout(type, 300); return; }
+      setTimeout(type, 45);
+    }
+  }
+  setTimeout(type, 1200);
+
+  // ─── SCROLL REVEAL
+  const reveals = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(r => obs.observe(r));
+
+  // ─── NAV SHRINK
+  window.addEventListener('scroll', () => {
+    document.querySelector('nav').style.padding =
+      window.scrollY > 40 ? '14px 56px' : '20px 56px';
+  });
+
+  // ─── COUNTER ANIMATION
+  function animCount(el, target, suffix='', duration=1800) {
+    let start = null;
+    const step = ts => {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      el.textContent = (Number.isInteger(target)
+        ? Math.floor(ease * target)
+        : (ease * target).toFixed(1)) + suffix;
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  const statsObs = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) {
+      animCount(document.getElementById('s1'), 24, 'K+');
+      animCount(document.getElementById('s2'), 8, 'K+');
+      animCount(document.getElementById('s3'), 3.2, 'x');
+      animCount(document.getElementById('s4'), 10, 'x');
+      statsObs.disconnect();
+    }
+  }, { threshold: 0.5 });
+  statsObs.observe(document.querySelector('.hero-stats'));
+</script>
+</body>
+</html>

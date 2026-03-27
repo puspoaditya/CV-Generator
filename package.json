@@ -25,10 +25,15 @@
     "@google/generative-ai": "^0.24.1",
     "drizzle-orm": "^0.45.1",
     "elysia": "^1.4.28",
+    "marked": "^17.0.5",
     "midtrans-client": "^1.4.3",
     "openai": "^6.32.0",
     "pdf-parse": "^2.4.5",
+    "playwright": "^1.58.2",
+    "playwright-core": "^1.58.2",
     "postgres": "^3.4.8",
+    "puppeteer": "^24.40.0",
+    "puppeteer-core": "^24.40.0",
     "stripe": "^21.0.0",
     "unpdf": "^1.4.0"
   }

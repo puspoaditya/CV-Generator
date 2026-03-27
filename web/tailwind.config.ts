@@ -15,12 +15,38 @@ const config: Config = {
       },
     },
     extend: {
+      fontFamily: {
+        serif: ['var(--font-fraunces)', 'serif'],
+        sans: ['var(--font-outfit)', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        clay: {
+          50: '#D8E8F5',
+          100: '#C8D8E8',
+          200: '#B8BFC8',
+          300: '#A8B0BA',
+          400: '#8A94A0',
+          500: '#6B7880',
+          600: '#4A5663',
+          700: '#3A4550',
+          800: '#253545',
+          900: '#0F1923',
+        },
+        brand: {
+          bg: '#B8BFC8',
+          surface: '#C4CAD2',
+          surface2: '#A8B0BA',
+          accent: '#1C3A5A',
+          accent2: '#254A70',
+          accentLight: '#4A7AA0',
+          gold: '#8A9EB8',
+          white: '#D8E8F5',
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
