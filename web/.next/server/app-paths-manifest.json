@@ -1,9 +1,8 @@
 {
+  "/page": "app/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
   "/generate/page": "app/generate/page.js",
   "/login/page": "app/login/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/resumes/page": "app/resumes/page.js",
-  "/page": "app/page.js",
-  "/analysis/page": "app/analysis/page.js",
-  "/settings/page": "app/settings/page.js"
+  "/register/page": "app/register/page.js",
+  "/terms/page": "app/terms/page.js"
 }

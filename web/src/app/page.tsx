@@ -688,7 +688,9 @@ export default function Home() {
           </div>
           <div className="flex flex-col md:flex-row justify-between text-[0.75rem] text-clay-600">
             <span>© 2026 CVCraft. Hak cipta dilindungi.</span>
-            <span className="mt-4 md:mt-0">Privasi · Syarat · Cookie</span>
+            <Link href="/terms" className="mt-4 md:mt-0 hover:text-brand-white transition-colors cursor-pointer">
+              Privasi · Syarat · Ketentuan
+            </Link>
           </div>
         </div>
       </footer>

@@ -160,7 +160,11 @@ export default function Register() {
               Daftar Sekarang
             </Button>
 
-            <div className="pt-6 text-center border-t border-black/5 text-sm text-clay-500 font-medium">
+            <p className="text-[10px] text-clay-400 text-center font-medium px-4">
+              Dengan mendaftar, Anda menyetujui <Link href="/terms" className="text-brand-accent hover:underline font-bold">Syarat & Ketentuan</Link> serta <Link href="/terms" className="text-brand-accent hover:underline font-bold">Kebijakan Privasi</Link> kami.
+            </p>
+
+            <div className="pt-6 text-center border-t border-black/5 text-sm text-clay-500 font-medium tracking-tight">
               Sudah memiliki akun?{" "}
               <Link href="/login" className="text-brand-accent hover:text-brand-accent2 ml-1 font-bold">
                 Masuk Disini
