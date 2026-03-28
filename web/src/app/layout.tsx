@@ -21,6 +21,10 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "CVCraft — CV yang Bicara untuk Kamu",
   description: "Buat CV dan Surat Lamaran yang teroptimasi ATS secara otomatis dengan kecerdasan buatan. Tingkatkan peluang karir Anda sekarang.",
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({
