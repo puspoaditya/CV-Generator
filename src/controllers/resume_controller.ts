@@ -2,8 +2,9 @@ import { db } from "../db";
 import { resumes, users } from "../db/schema";
 import { eq, and, count } from "drizzle-orm";
 import type { Context } from "elysia";
+import { generateStructuredResume } from "../services/ai_service";
 
-export const createBaseResume = async ({ body, jwt, set, request }: Context & { body: any; jwt: any }) => {
+export const createMasterResume = async ({ body, jwt, set, request }: Context & { body: any; jwt: any }) => {
   const authHeader = request.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     set.status = 401;
@@ -17,7 +18,7 @@ export const createBaseResume = async ({ body, jwt, set, request }: Context & { 
     return { error: "Unauthorized" };
   }
 
-  const { title, content } = body;
+  const { title, content, source } = body;
   if (!title || !content) {
     set.status = 400;
     return { error: "Title and content are required" };
@@ -38,11 +39,11 @@ export const createBaseResume = async ({ body, jwt, set, request }: Context & { 
     const existingResumes = await db
       .select({ value: count() })
       .from(resumes)
-      .where(and(eq(resumes.userId, user.id), eq(resumes.isBase, 1)));
+      .where(and(eq(resumes.userId, user.id), eq(resumes.type, "master")));
 
-    if (existingResumes[0].value >= 1) {
+    if (existingResumes[0] && existingResumes[0].value >= 1) {
       set.status = 403;
-      return { error: "Free tier limit reached: Only 1 Base CV allowed" };
+      return { error: "Free tier limit reached: Only 1 Master CV allowed" };
     }
   }
 
@@ -51,10 +52,11 @@ export const createBaseResume = async ({ body, jwt, set, request }: Context & { 
     userId: user.id,
     title,
     content,
-    isBase: 1,
+    type: "master",
+    source: source || "manual",
   });
 
-  return { message: "Base CV saved successfully" };
+  return { message: "Master CV saved successfully" };
 };
 
 import { extractText } from "unpdf";
@@ -87,7 +89,7 @@ export const extractPdf = async ({ body, set }: Context & { body: any }) => {
   }
 };
 
-export const getMyResumes = async ({ jwt, set, request }: Context & { jwt: any }) => {
+export const getMyResumes = async ({ jwt, set, request, query }: Context & { jwt: any; query: any }) => {
   const authHeader = request.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     set.status = 401;
@@ -101,8 +103,14 @@ export const getMyResumes = async ({ jwt, set, request }: Context & { jwt: any }
     return { error: "Unauthorized" };
   }
 
+  const type = query.type;
+  
+  const whereClause = type 
+    ? and(eq(resumes.userId, payload.id), eq(resumes.type, type))
+    : eq(resumes.userId, payload.id);
+
   const userResumes = await db.query.resumes.findMany({
-    where: eq(resumes.userId, payload.id),
+    where: whereClause,
     orderBy: (resumes, { desc }) => [desc(resumes.createdAt)],
   });
 
@@ -130,4 +138,21 @@ export const deleteResume = async ({ params, jwt, set, request }: Context & { pa
   );
 
   return { message: "Resume deleted successfully" };
+};
+
+export const parseResumeData = async ({ body, set }: Context & { body: any }) => {
+  const { content } = body;
+  if (!content) {
+    set.status = 400;
+    return { error: "Content is required" };
+  }
+
+  try {
+    const structuredData = await generateStructuredResume(content);
+    if (!structuredData) throw new Error("Gagal mengurai data resume.");
+    return structuredData;
+  } catch (err: any) {
+    set.status = 500;
+    return { error: err.message };
+  }
 };
