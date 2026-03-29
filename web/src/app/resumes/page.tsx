@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api";
@@ -12,7 +12,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { 
   PlusCircle, 
@@ -30,7 +29,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-export default function ResumesPage() {
+function ResumesList() {
   const searchParams = useSearchParams();
   const typeParam = searchParams.get("type") === "optimized" ? "optimized" : "master";
   
@@ -326,5 +325,17 @@ export default function ResumesPage() {
          <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-clay-400 italic">CVCraft Intelligence Storage Vault</p>
       </footer>
     </div>
+  );
+}
+
+export default function ResumesPage() {
+  return (
+    <Suspense fallback={
+       <div className="min-h-screen bg-brand-bg flex items-center justify-center">
+          <div className="w-16 h-16 border-4 border-brand-accent/20 border-t-brand-accent rounded-full animate-spin" />
+       </div>
+    }>
+      <ResumesList />
+    </Suspense>
   );
 }
