@@ -3,7 +3,7 @@ import { users } from "../db/schema";
 import { eq } from "drizzle-orm";
 import type { Context } from "elysia";
 
-export const register = async ({ body, set }: Context & { body: any }) => {
+export const register = async ({ body, jwt, set }: Context & { body: any; jwt: any }) => {
   const { name, email, password } = body;
 
   if (!name || !email || !password) {
@@ -25,14 +25,31 @@ export const register = async ({ body, set }: Context & { body: any }) => {
   const hashedPassword = await Bun.password.hash(password);
 
   // Insert user
-  await db.insert(users).values({
+  const [newUser] = await db.insert(users).values({
     name,
     email,
     password: hashedPassword,
     tier: "free",
+  }).returning();
+
+  // Generate token
+  const token = await (jwt as any).sign({
+    id: newUser.id,
+    email: newUser.email,
   });
 
-  return { message: "User registered successfully" };
+  return { 
+    message: "User registered successfully", 
+    token,
+    user: {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      tier: newUser.tier,
+      credits: newUser.credits,
+      isPro: newUser.isPro,
+    }
+  };
 };
 
 export const login = async ({ body, jwt, set }: Context & { body: any; jwt: any }) => {
@@ -75,6 +92,8 @@ export const login = async ({ body, jwt, set }: Context & { body: any; jwt: any 
       name: user.name,
       email: user.email,
       tier: user.tier,
+      credits: user.credits,
+      isPro: user.isPro,
     },
   };
 };
@@ -108,5 +127,7 @@ export const getMe = async ({ jwt, set, request }: Context & { jwt: any }) => {
         name: user.name,
         email: user.email,
         tier: user.tier,
+        credits: user.credits,
+        isPro: user.isPro,
     };
 };

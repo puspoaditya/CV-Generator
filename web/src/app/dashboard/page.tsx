@@ -10,7 +10,7 @@ import {
   Plus, 
   FileText, 
   Zap, 
-  Settings, 
+  Settings as SettingsIcon, 
   LogOut, 
   History, 
   CreditCard, 
@@ -75,31 +75,30 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center gap-4">
-        <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-        <p className="text-slate-500 font-black uppercase tracking-[0.3em] text-[10px] animate-pulse">Menghubungkan ke Neural Link...</p>
+      <div className="min-h-screen bg-brand-bg flex flex-col items-center justify-center gap-4">
+        <div className="w-16 h-16 border-4 border-brand-accent/20 border-t-brand-accent rounded-full animate-spin" />
+        <p className="text-clay-500 font-bold uppercase tracking-[0.3em] text-[10px] animate-pulse">Menghubungkan ke Neural Link...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 bg-mesh selection:bg-primary/30">
+    <div className="min-h-screen bg-brand-bg text-clay-900 font-sans selection:bg-brand-accent/20 cursor-default">
       {/* Sidebar / Top Nav Overlay */}
-      <nav className="fixed top-0 w-full z-50 border-b border-white/5 backdrop-blur-xl bg-black/40">
+      <nav className="fixed top-0 w-full z-50 border-b border-black/5 backdrop-blur-xl bg-white/40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)]">
-              <Sparkles className="w-5 h-5 text-white" />
+            <div className="font-serif font-bold text-2xl tracking-tight text-clay-900">
+              CV<span className="italic font-light text-brand-accent">Craft</span>
             </div>
-            <span className="font-black text-xl tracking-tight text-white">HireReady<span className="text-primary">.ai</span></span>
           </Link>
           <div className="flex items-center gap-2 md:gap-4">
             <Link href="/pricing" className="hidden md:block">
-               <Button variant="ghost" className="flex gap-2 text-slate-400 hover:text-white hover:bg-white/5 font-bold text-xs uppercase tracking-widest">
+               <Button variant="ghost" className="flex gap-2 text-clay-500 hover:text-clay-900 hover:bg-black/5 font-bold text-xs uppercase tracking-widest transition-colors">
                   <CreditCard className="w-4 h-4" /> Beli Kredit
                </Button>
             </Link>
-            <div className="h-8 w-[1px] bg-white/10 hidden md:block" />
+            <div className="h-8 w-[1px] bg-black/10 hidden md:block" />
             <Button 
                variant="ghost" 
                size="icon"
@@ -107,12 +106,12 @@ export default function Dashboard() {
                  localStorage.removeItem("token");
                  router.push("/login");
                }}
-               className="text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-full"
+               className="text-clay-400 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors"
             >
               <LogOut className="w-5 h-5" />
             </Button>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-indigo-600 p-[2px] cursor-pointer hover:scale-105 transition-transform">
-               <div className="w-full h-full rounded-full bg-[#020617] flex items-center justify-center text-xs font-black">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-accent to-brand-accentLight p-[2px] cursor-pointer hover:scale-105 transition-transform shadow-sm">
+               <div className="w-full h-full rounded-full bg-brand-bg flex items-center justify-center text-xs font-bold text-brand-accent">
                   {user?.name?.substring(0, 2).toUpperCase()}
                </div>
             </div>
@@ -129,16 +128,16 @@ export default function Dashboard() {
              className="flex flex-col md:flex-row md:items-end justify-between gap-6"
            >
               <div>
-                 <div className="flex items-center gap-2 text-primary font-black uppercase tracking-[0.2em] text-[10px] mb-2">
+                 <div className="flex items-center gap-2 text-brand-accent font-bold uppercase tracking-[0.2em] text-[10px] mb-2">
                     <Clock className="w-3 h-3" /> {getTimeGreeting()}
                  </div>
-                 <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter">
-                    Apa kabar, <span className="text-primary">{user?.name?.split(' ')[0]}</span>! 👋
+                 <h1 className="font-serif text-4xl md:text-5xl font-bold text-clay-900 tracking-tight leading-none">
+                    Apa kabar, <span className="italic font-light text-brand-accent">{user?.name?.split(' ')[0]}</span>! 👋
                  </h1>
-                 <p className="text-slate-500 mt-2 font-medium">Panel kendali untuk karir impian Anda sudah siap.</p>
+                 <p className="text-clay-600 mt-3 font-light">Panel kendali untuk karir impian Anda sudah siap.</p>
               </div>
               <Link href="/generate">
-                 <Button className="h-16 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black text-lg shadow-[0_20px_40px_-10px_rgba(139,92,246,0.3)] group">
+                 <Button className="h-16 px-8 rounded-2xl bg-brand-accent hover:bg-brand-accent2 text-brand-white font-bold text-lg shadow-xl shadow-brand-accent/20 group transition-all hover:-translate-y-1">
                     <Plus className="mr-2 h-6 w-6 group-hover:rotate-90 transition-transform duration-300" /> 
                     Buat CV Baru
                  </Button>
@@ -153,28 +152,28 @@ export default function Dashboard() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 }}
-              className="md:col-span-2 glass-dark p-8 rounded-[2.5rem] border-white/5 relative overflow-hidden group"
+              className="md:col-span-2 bg-white/40 backdrop-blur-md p-8 rounded-[2.5rem] border border-black/5 relative overflow-hidden group shadow-sm transition-all hover:bg-white/60"
             >
                <div className="absolute top-0 right-0 p-8">
-                  <Zap className="w-12 h-12 text-primary opacity-20 group-hover:opacity-100 transition-opacity" />
+                  <Zap className="w-12 h-12 text-brand-accent opacity-5 group-hover:opacity-20 transition-opacity" />
                </div>
                <div className="relative z-10 h-full flex flex-col justify-between">
                   <div>
-                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-6">Kredit Tersisa</h3>
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-clay-500 mb-6">Kredit Tersisa</h3>
                     <div className="flex items-baseline gap-4">
-                       <span className="text-6xl font-black text-white tracking-tighter">{stats?.credits}</span>
-                       <span className="text-slate-500 font-bold uppercase tracking-widest text-sm">Token</span>
+                       <span className="font-serif text-7xl font-bold text-clay-900 tracking-tighter">{stats?.credits}</span>
+                       <span className="text-clay-500 font-bold uppercase tracking-widest text-sm">Token</span>
                     </div>
                   </div>
                   <div className="mt-8">
-                     <div className="w-full h-2 bg-white/5 rounded-full mb-4 overflow-hidden">
+                     <div className="w-full h-2.5 bg-black/5 rounded-full mb-4 overflow-hidden shadow-inner">
                         <motion.div 
                           initial={{ width: 0 }}
                           animate={{ width: `${(stats?.credits || 0) * 10}%` }}
-                          className="h-full bg-gradient-to-r from-primary via-indigo-400 to-cyan-400"
+                          className="h-full bg-brand-accent shadow-[0_0_10px_rgba(28,58,90,0.3)]"
                         />
                      </div>
-                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-600">Teroptimasi untuk {stats?.credits}x pengajuan</p>
+                     <p className="text-[10px] font-bold uppercase tracking-widest text-clay-400">Teroptimasi untuk {stats?.credits}x pengajuan</p>
                   </div>
                </div>
             </motion.div>
@@ -184,15 +183,15 @@ export default function Dashboard() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="glass-dark p-8 rounded-[2.5rem] border-white/5 group hover:border-primary/20 transition-all"
+              className="bg-white/40 backdrop-blur-md p-8 rounded-[2.5rem] border border-black/5 group hover:bg-white/60 transition-all shadow-sm"
             >
-               <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
-                  <FileText className="w-6 h-6 text-primary" />
+               <div className="w-12 h-12 rounded-2xl bg-brand-accent/10 flex items-center justify-center mb-6 group-hover:bg-brand-accent/20 transition-colors">
+                  <FileText className="w-6 h-6 text-brand-accent" />
                </div>
-               <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-2">Total Resume</h3>
-               <p className="text-4xl font-black text-white tracking-tight">{stats?.resumesCount}</p>
-               <p className="text-slate-600 text-[10px] font-black uppercase tracking-widest mt-4 flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3 text-emerald-500" /> CV Teroptimasi
+               <h3 className="text-xs font-bold uppercase tracking-widest text-clay-500 mb-2">Total Resume</h3>
+               <p className="font-serif text-5xl font-bold text-clay-900 tracking-tight">{stats?.resumesCount}</p>
+               <p className="text-clay-400 text-[10px] font-bold uppercase tracking-widest mt-6 flex items-center gap-1">
+                  <TrendingUp className="w-3 h-3 text-emerald-600" /> CV Teroptimasi
                </p>
             </motion.div>
 
@@ -201,17 +200,17 @@ export default function Dashboard() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3 }}
-              className={`p-8 rounded-[2.5rem] border transition-all ${stats?.isPro ? 'glass-accent border-primary/20' : 'glass-dark border-white/5'}`}
+              className={`p-8 rounded-[2.5rem] border transition-all shadow-sm ${stats?.isPro ? 'bg-clay-900 border-brand-gold/20' : 'bg-white/40 border-black/5'}`}
             >
-               <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center mb-6">
-                  <Sparkles className="w-6 h-6 text-primary" />
+               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-6 ${stats?.isPro ? 'bg-brand-gold/20' : 'bg-brand-accent/10'}`}>
+                  <Sparkles className={`w-6 h-6 ${stats?.isPro ? 'text-brand-gold' : 'text-brand-accent'}`} />
                </div>
-               <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-2">Status Akun</h3>
-               <p className="text-2xl font-black text-white uppercase tracking-[0.1em]">
+               <h3 className={`text-xs font-bold uppercase tracking-widest mb-2 ${stats?.isPro ? 'text-brand-gold/60' : 'text-clay-500'}`}>Status Akun</h3>
+               <p className={`font-serif text-2xl font-bold uppercase tracking-widest ${stats?.isPro ? 'text-brand-gold' : 'text-clay-900'}`}>
                   {stats?.isPro ? "PRO ELITE" : "Bukan PRO"}
                </p>
                {!stats?.isPro && (
-                 <Link href="/pricing" className="mt-4 block text-[10px] font-black uppercase tracking-widest text-primary hover:underline">
+                 <Link href="/pricing" className="mt-6 block text-[10px] font-bold uppercase tracking-widest text-brand-accent hover:underline decoration-brand-accent/30 decoration-2 underline-offset-4">
                     Upgrade Sekarang →
                  </Link>
                )}
@@ -221,27 +220,27 @@ export default function Dashboard() {
         {/* Quick Actions & Recent */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
            {/* Section: Quick Actions */}
-           <section className="lg:col-span-2 space-y-6">
-              <div className="flex items-center justify-between px-4">
-                 <h2 className="text-xl font-black text-white tracking-tight uppercase tracking-[0.1em]">Aksi Cepat</h2>
+           <section className="lg:col-span-2 space-y-8">
+              <div className="flex items-center justify-between px-2">
+                 <h2 className="font-serif text-xl font-bold text-clay-900 tracking-tight uppercase tracking-widest">Aksi Utama</h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  {[
-                   { title: "Generate CV", icon: FileText, desc: "Buat CV teroptimasi AI", href: "/generate", color: "text-blue-400" },
-                   { title: "Analisis Karir", icon: Briefcase, desc: "Cek skor kesiapan kerja", href: "#", color: "text-emerald-400" },
-                   { title: "Riwayat", icon: History, desc: "Lihat hasil sebelumnya", href: "/resumes", color: "text-purple-400" },
-                   { title: "Settings", icon: Settings, desc: "Konfigurasi akun & AI", href: "#", color: "text-slate-400" }
+                   { title: "Generate CV", icon: FileText, desc: "Buat CV teroptimasi AI", href: "/generate", color: "text-brand-accent" },
+                   { title: "Analisis Karir", icon: Briefcase, desc: "Cek skor kesiapan kerja", href: "/analysis", color: "text-brand-accentLight" },
+                   { title: "Riwayat", icon: History, desc: "Lihat hasil sebelumnya", href: "/resumes", color: "text-clay-600" },
+                   { title: "Settings", icon: SettingsIcon, desc: "Konfigurasi akun & AI", href: "/settings", color: "text-clay-400" }
                  ].map((action, i) => (
                    <Link key={i} href={action.href}>
-                      <div className="group p-6 rounded-3xl glass-dark border-white/5 hover:border-white/10 hover:bg-white/5 transition-all flex items-center gap-6">
-                         <div className={`w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center transition-all group-hover:scale-110 ${action.color}`}>
+                      <div className="group p-6 rounded-3xl bg-white/40 border border-black/5 hover:bg-white/80 hover:shadow-xl hover:-translate-y-1 transition-all flex items-center gap-6">
+                         <div className={`w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-sm transition-all group-hover:scale-110 ${action.color}`}>
                             <action.icon className="w-6 h-6" />
                          </div>
                          <div className="flex-1">
-                            <h4 className="font-black text-white text-lg tracking-tight group-hover:text-primary transition-colors">{action.title}</h4>
-                            <p className="text-slate-500 text-sm font-medium">{action.desc}</p>
+                            <h4 className="font-bold text-clay-900 text-lg tracking-tight group-hover:text-brand-accent transition-colors">{action.title}</h4>
+                            <p className="text-clay-500 text-sm font-light">{action.desc}</p>
                          </div>
-                         <ChevronRight className="w-5 h-5 text-slate-700 group-hover:translate-x-1 group-hover:text-white transition-all" />
+                         <ChevronRight className="w-5 h-5 text-clay-300 group-hover:translate-x-1 group-hover:text-brand-accent transition-all" />
                       </div>
                    </Link>
                  ))}
@@ -250,38 +249,38 @@ export default function Dashboard() {
 
            {/* Section: Right Sidebar Items (Announcements/Pro) */}
            <aside className="space-y-6">
-              <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-indigo-900/40 to-primary/20 border border-primary/20 relative overflow-hidden">
+              <div className="p-8 rounded-[2.5rem] bg-brand-accent border border-black/5 relative overflow-hidden shadow-2xl">
                  <div className="relative z-10">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-2">Tips Hari Ini</p>
-                    <h3 className="text-xl font-black text-white mb-4 leading-tight">Gunakan Kata Kunci Aksi untuk Skor ATS Lebih Tinggi.</h3>
-                    <p className="text-indigo-200/60 text-sm font-medium leading-relaxed mb-6">AI kami menyarankan penggunaan kata kerja aktif seperti "Memimpin", "Menginisiasi", dan "Mengoptimalkan" untuk hasil terbaik.</p>
-                    <Button variant="outline" className="w-full border-primary/20 bg-primary/10 text-primary hover:bg-primary font-bold">Pelajari Selengkapnya</Button>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-white/50 mb-3">Tips Hari Ini</p>
+                    <h3 className="font-serif text-xl font-bold text-brand-white mb-5 leading-tight">Gunakan Kata Kunci Aksi untuk Skor ATS Lebih Tinggi.</h3>
+                    <p className="text-brand-white/70 text-sm font-light leading-relaxed mb-8">AI kami menyarankan penggunaan kata kerja aktif seperti "Memimpin", "Menginisiasi", dan "Mengoptimalkan" untuk hasil terbaik.</p>
+                    <Button variant="outline" className="w-full border-white/20 bg-white/10 text-brand-white hover:bg-brand-white hover:text-brand-accent font-bold rounded-xl transition-all">Pelajari Selengkapnya</Button>
                  </div>
-                 <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-[60px]" />
+                 <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-white/5 rounded-full blur-[80px]" />
               </div>
 
-              <div className="glass-dark p-8 rounded-[2.5rem] border-white/5 flex flex-col items-center text-center">
-                 <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6">
-                    <Briefcase className="w-8 h-8 text-slate-600" />
+              <div className="bg-white/40 p-10 rounded-[2.5rem] border border-black/5 flex flex-col items-center text-center shadow-sm">
+                 <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-6 shadow-soft">
+                    <Briefcase className="w-7 h-7 text-brand-accent" />
                  </div>
-                 <h4 className="font-black text-white mb-2">HireReady v2.4</h4>
-                 <p className="text-slate-500 text-xs font-bold leading-relaxed mb-6">Engine AI terbaru lebih cepat 40% dan mendukung 15+ format resume industri.</p>
-                 <div className="flex gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">Neural Link Online</span>
+                 <h4 className="font-serif text-lg font-bold text-clay-900 mb-2 tracking-tight">CVCraft v2.4</h4>
+                 <p className="text-clay-500 text-xs font-light leading-relaxed mb-8">Engine AI terbaru lebih cepat 40% dan mendukung 15+ format resume industri.</p>
+                 <div className="flex items-center gap-2 px-4 py-1.5 bg-brand-accent/5 rounded-full border border-brand-accent/10">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-brand-accent">Neural Link Online</span>
                  </div>
               </div>
            </aside>
         </div>
       </main>
 
-      <footer className="py-12 border-t border-white/5 px-6">
+      <footer className="py-12 border-t border-black/5 px-6">
          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 italic">Core AI System: High Precision Pulse Engine</p>
-            <div className="flex gap-6 text-slate-600 text-[10px] font-black uppercase tracking-widest">
-               <a href="#" className="hover:text-white transition-colors">Support</a>
-               <a href="#" className="hover:text-white transition-colors">Docs</a>
-               <a href="#" className="hover:text-white transition-colors">API</a>
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-clay-400 italic">Core AI System: High Precision Pulse Engine</p>
+            <div className="flex gap-8 text-clay-400 text-[10px] font-bold uppercase tracking-widest">
+               <a href="#" className="hover:text-clay-900 transition-colors">Support</a>
+               <a href="#" className="hover:text-clay-900 transition-colors">Docs</a>
+               <a href="#" className="hover:text-clay-900 transition-colors">API</a>
             </div>
          </div>
       </footer>

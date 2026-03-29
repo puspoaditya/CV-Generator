@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Syncra — Kolaborasi Tanpa Batas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300;1,9..144,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gray-50:  #D8E8F5;
+      --gray-100: #C8D8E8;
+      --gray-200: #B8BFC8;
+      --gray-300: #A8B0BA;
+      --gray-400: #8A94A0;
+      --gray-500: #6B7880;
+      --gray-600: #4A5663;
+      --gray-700: #3A4550;
+      --gray-800: #253545;
+      --gray-900: #0F1923;
+      --bg:       #B8BFC8;
+      --surface:  #C4CAD2;
+      --surface2: #A8B0BA;
+      --accent:   #1C3A5A;
+      --accent2:  #254A70;
+      --white:    #D8E8F5;
+      --cursor-color: #0F1923;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--gray-900);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ─── CUSTOM CURSOR ─── */
+    .cursor-dot {
+      position: fixed;
+      width: 8px; height: 8px;
+      background: var(--gray-900);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s;
+    }
+    .cursor-ring {
+      position: fixed;
+      width: 36px; height: 36px;
+      border: 1.5px solid rgba(28,28,28,0.45);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: all 0.18s ease;
+    }
+    body:has(a:hover) .cursor-ring,
+    body:has(button:hover) .cursor-ring {
+      width: 52px; height: 52px;
+      border-color: var(--accent);
+      background: rgba(28,58,90,0.08);
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 56px;
+      background: rgba(184,191,200,0.78);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      transition: padding 0.3s;
+    }
+    .logo {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: var(--gray-900);
+      letter-spacing: -0.02em;
+    }
+    .logo span { font-style: italic; font-weight: 300; color: var(--gray-600); }
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.83rem;
+      font-weight: 500;
+      color: var(--gray-700);
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      transition: color 0.2s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 0; height: 1px;
+      background: var(--gray-900);
+      transition: width 0.25s;
+    }
+    .nav-links a:hover { color: var(--gray-900); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta {
+      background: var(--accent) !important;
+      color: var(--gray-50) !important;
+      padding: 9px 22px;
+      border-radius: 8px;
+      font-weight: 600 !important;
+      font-size: 0.8rem !important;
+      transition: background 0.2s, transform 0.15s !important;
+    }
+    .nav-cta::after { display: none !important; }
+    .nav-cta:hover { background: var(--accent2) !important; transform: translateY(-1px); }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 140px 56px 80px;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    /* grid background */
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(15,25,35,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15,25,35,0.07) 1px, transparent 1px);
+      background-size: 52px 52px;
+      mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
+    }
+
+    /* floating blobs */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.18;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+    .blob-1 { width: 520px; height: 520px; background: #4A6880; top: -100px; left: -140px; animation-delay: 0s; }
+    .blob-2 { width: 380px; height: 380px; background: #1C3A5A; bottom: -80px; right: -80px; animation-delay: -4s; }
+    .blob-3 { width: 280px; height: 280px; background: #6A8AA0; top: 40%; left: 60%; animation-delay: -8s; }
+
+    @keyframes drift {
+      0%   { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(40px, 30px) scale(1.06); }
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.38);
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 30px;
+      padding: 6px 16px 6px 8px;
+      font-size: 0.73rem;
+      font-weight: 500;
+      color: var(--gray-700);
+      margin-bottom: 32px;
+      backdrop-filter: blur(8px);
+      animation: fadeDown 0.8s ease both;
+    }
+    .badge-dot {
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.6rem;
+      color: var(--gray-50);
+    }
+
+    .hero h1 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(3rem, 6vw, 5.5rem);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      color: var(--gray-900);
+      max-width: 820px;
+      animation: fadeUp 1s ease 0.2s both;
+    }
+    .hero h1 em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--gray-600);
+    }
+
+    /* TYPEWRITER */
+    .typewriter-wrap {
+      display: block;
+      min-height: 1.15em;
+      margin-top: 8px;
+      animation: fadeUp 1s ease 0.4s both;
+    }
+    #typewriter {
+      color: var(--gray-900);
+      font-style: normal;
+      font-weight: 700;
+      position: relative;
+    }
+    #typewriter::after {
+      content: '|';
+      color: var(--gray-700);
+      animation: blink 0.75s step-end infinite;
+      margin-left: 2px;
+      font-weight: 300;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .hero-sub {
+      max-width: 520px;
+      font-size: 1rem;
+      font-weight: 300;
+      color: var(--gray-700);
+      line-height: 1.75;
+      margin-top: 28px;
+      animation: fadeUp 1s ease 0.55s both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      margin-top: 42px;
+      animation: fadeUp 1s ease 0.7s both;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--gray-50);
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border: none;
+      cursor: none;
+      letter-spacing: 0.02em;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(28,58,90,0.28);
+    }
+    .btn-primary:hover {
+      background: var(--accent2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(28,58,90,0.35);
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.38);
+      color: var(--gray-800);
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      border: 1px solid rgba(0,0,0,0.12);
+      cursor: none;
+      backdrop-filter: blur(8px);
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.55);
+      transform: translateY(-2px);
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 48px;
+      margin-top: 64px;
+      padding-top: 40px;
+      border-top: 1px solid rgba(0,0,0,0.1);
+      animation: fadeUp 1s ease 0.85s both;
+    }
+    .stat-num {
+      font-family: 'Fraunces', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--gray-600);
+      margin-top: 5px;
+      font-weight: 400;
+    }
+
+    /* ─── SECTION SHARED ─── */
+    section { padding: 100px 56px; }
+    .sec-tag {
+      font-size: 0.67rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gray-600);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .sec-tag::before { content: ''; width: 24px; height: 1px; background: currentColor; }
+    .sec-h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      font-weight: 700;
+      line-height: 1.12;
+      letter-spacing: -0.025em;
+      color: var(--gray-900);
+    }
+    .sec-h2 em { font-style: italic; font-weight: 300; color: var(--gray-600); }
+    .sec-p {
+      font-size: 0.92rem;
+      color: var(--gray-700);
+      font-weight: 300;
+      line-height: 1.8;
+      max-width: 480px;
+      margin-top: 14px;
+    }
+
+    /* ─── FEATURES ─── */
+    .features { background: var(--surface); }
+    .features-header { text-align: center; margin-bottom: 64px; }
+    .features-header .sec-p { margin: 14px auto 0; }
+
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .feat-card {
+      background: var(--bg);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 20px;
+      padding: 32px 28px;
+      transition: transform 0.25s, box-shadow 0.25s, background 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+    .feat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(0,0,0,0.15), transparent);
+      transition: opacity 0.3s;
+      opacity: 0;
+    }
+    .feat-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+      background: var(--gray-50);
+    }
+    .feat-card:hover::before { opacity: 1; }
+    .feat-icon {
+      width: 46px; height: 46px;
+      background: var(--accent);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+    }
+    .feat-card h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+    .feat-card p {
+      font-size: 0.82rem;
+      color: var(--gray-700);
+      line-height: 1.75;
+      font-weight: 300;
+    }
+    .feat-card .feat-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 18px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      text-decoration: none;
+      letter-spacing: 0.03em;
+      transition: gap 0.2s;
+    }
+    .feat-card:hover .feat-link { gap: 10px; }
+
+    /* ─── HOW IT WORKS ─── */
+    .how { background: var(--bg); }
+    .how-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .steps { display: grid; gap: 0; }
+    .step {
+      display: flex;
+      gap: 22px;
+      padding: 28px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      transition: padding-left 0.3s;
+      cursor: default;
+    }
+    .step:last-child { border-bottom: none; }
+    .step:hover { padding-left: 8px; }
+    .step-num {
+      font-family: 'Fraunces', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--gray-300);
+      line-height: 1;
+      flex-shrink: 0;
+      width: 48px;
+      transition: color 0.3s;
+    }
+    .step:hover .step-num { color: var(--gray-600); }
+    .step-content h4 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 6px;
+    }
+    .step-content p {
+      font-size: 0.8rem;
+      color: var(--gray-600);
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    /* mock UI panel */
+    .mock-panel {
+      background: var(--surface);
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.5);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.5);
+      overflow: hidden;
+    }
+    .mock-bar {
+      background: var(--surface2);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    .mock-dot { width: 11px; height: 11px; border-radius: 50%; }
+    .mock-body { padding: 24px; }
+    .mock-row {
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid rgba(0,0,0,0.06);
+      transition: transform 0.2s;
+    }
+    .mock-row:hover { transform: translateX(4px); }
+    .mock-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--gray-400);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--gray-700);
+    }
+    .mock-text { flex: 1; }
+    .mock-title { font-size: 0.78rem; font-weight: 600; color: var(--gray-900); }
+    .mock-sub { font-size: 0.68rem; color: var(--gray-600); margin-top: 2px; }
+    .mock-badge {
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .badge-done { background: rgba(15,25,35,0.08); color: var(--gray-700); }
+    .badge-live { background: var(--accent); color: var(--gray-50); }
+    .badge-rev  { background: rgba(15,25,35,0.05); color: var(--gray-600); }
+
+    /* typing indicator */
+    .typing-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0 4px;
+    }
+    .typing-dots { display: flex; gap: 4px; }
+    .typing-dots span {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--gray-500);
+      animation: typedot 1.2s ease-in-out infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typedot {
+      0%,80%,100% { transform: scale(0.7); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+    .typing-label { font-size: 0.68rem; color: var(--gray-600); }
+
+    /* ─── PRICING ─── */
+    .pricing { background: var(--surface); }
+    .pricing-header { text-align: center; margin-bottom: 52px; }
+    .pricing-header .sec-p { margin: 14px auto 0; }
+
+    .price-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+    .price-card {
+      background: var(--bg);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 20px;
+      padding: 36px 28px;
+      transition: transform 0.25s, box-shadow 0.25s;
+      position: relative;
+    }
+    .price-card:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
+    .price-card.featured {
+      background: var(--accent);
+      border-color: transparent;
+      color: var(--gray-50);
+    }
+    .price-card.featured .price-desc,
+    .price-card.featured .price-feat { color: rgba(216,232,245,0.65); }
+    .featured-label {
+      position: absolute;
+      top: -13px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--gray-800);
+      color: var(--gray-50);
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 20px;
+    }
+    .price-plan {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray-600);
+      margin-bottom: 14px;
+    }
+    .price-card.featured .price-plan { color: rgba(216,232,245,0.6); }
+    .price-amount {
+      font-family: 'Fraunces', serif;
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .price-card.featured .price-amount { color: var(--gray-50); }
+    .price-amount sup { font-size: 1.1rem; vertical-align: super; }
+    .price-amount sub { font-size: 0.9rem; font-weight: 300; }
+    .price-desc { font-size: 0.78rem; color: var(--gray-600); margin: 10px 0 24px; line-height: 1.6; font-weight: 300; }
+    .price-feats { display: grid; gap: 10px; margin-bottom: 28px; }
+    .price-feat {
+      font-size: 0.78rem;
+      color: var(--gray-700);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .price-feat::before {
+      content: '✓';
+      width: 18px; height: 18px;
+      background: rgba(0,0,0,0.07);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.6rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .price-card.featured .price-feat::before { background: rgba(255,255,255,0.12); color: var(--gray-200); }
+    .price-btn {
+      width: 100%;
+      padding: 13px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: none;
+      border: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+      letter-spacing: 0.02em;
+    }
+    .price-btn:hover { transform: translateY(-2px); }
+    .price-btn-outline {
+      background: transparent;
+      border: 1.5px solid rgba(0,0,0,0.15);
+      color: var(--gray-800);
+    }
+    .price-btn-outline:hover { background: rgba(0,0,0,0.05); }
+    .price-btn-filled {
+      background: var(--gray-50);
+      color: var(--gray-900);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+    }
+
+    /* ─── TESTIMONIALS ─── */
+    .testi { background: var(--bg); }
+    .testi-header { text-align: center; margin-bottom: 52px; }
+    .testi-header .sec-p { margin: 14px auto 0; }
+
+    .testi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+    .testi-card {
+      background: var(--surface);
+      border: 1px solid rgba(0,0,0,0.07);
+      border-radius: 18px;
+      padding: 28px 24px;
+      transition: transform 0.22s, box-shadow 0.22s;
+    }
+    .testi-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.09); }
+    .testi-stars { color: var(--gray-700); font-size: 0.85rem; letter-spacing: 2px; margin-bottom: 14px; }
+    .testi-quote {
+      font-family: 'Fraunces', serif;
+      font-size: 0.95rem;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--gray-800);
+      line-height: 1.75;
+      margin-bottom: 20px;
+    }
+    .testi-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .testi-av {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: var(--gray-400);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      font-size: 0.78rem;
+      color: var(--gray-700);
+      flex-shrink: 0;
+    }
+    .testi-name { font-size: 0.8rem; font-weight: 600; color: var(--gray-900); }
+    .testi-role { font-size: 0.7rem; color: var(--gray-600); margin-top: 1px; }
+
+    /* ─── CTA ─── */
+    .cta-section {
+      background: var(--gray-900);
+      padding: 100px 56px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(216,232,245,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(216,232,245,0.04) 1px, transparent 1px);
+      background-size: 52px 52px;
+    }
+    .cta-inner { position: relative; z-index: 1; }
+    .cta-section h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2.2rem, 4vw, 3.5rem);
+      font-weight: 700;
+      color: var(--gray-50);
+      letter-spacing: -0.025em;
+      line-height: 1.1;
+      margin-bottom: 18px;
+    }
+    .cta-section h2 em { font-style: italic; font-weight: 300; color: var(--gray-400); }
+    .cta-section p { font-size: 0.92rem; color: var(--gray-500); font-weight: 300; margin-bottom: 40px; }
+    .cta-btns { display: flex; gap: 14px; justify-content: center; }
+    .cta-btn-white {
+      background: var(--gray-50);
+      color: var(--gray-900);
+      padding: 14px 34px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border: none;
+      cursor: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+    }
+    .cta-btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+    .cta-btn-ghost {
+      background: transparent;
+      color: var(--gray-400);
+      padding: 14px 34px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      border: 1px solid rgba(255,255,255,0.15);
+      cursor: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .cta-btn-ghost:hover { border-color: rgba(255,255,255,0.35); color: var(--gray-200); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--surface2);
+      padding: 48px 56px 32px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+    .footer-top {
+      display: grid;
+      grid-template-columns: 1.8fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 40px;
+    }
+    .footer-brand .logo { font-size: 1.2rem; }
+    .footer-brand p {
+      font-size: 0.78rem;
+      color: var(--gray-600);
+      font-weight: 300;
+      margin-top: 12px;
+      line-height: 1.7;
+    }
+    .footer-col h5 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray-700);
+      margin-bottom: 16px;
+    }
+    .footer-col a {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--gray-600);
+      text-decoration: none;
+      margin-bottom: 10px;
+      transition: color 0.2s;
+      font-weight: 300;
+    }
+    .footer-col a:hover { color: var(--gray-900); }
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 24px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      font-size: 0.72rem;
+      color: var(--gray-600);
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Sync<span>ra</span></div>
+  <ul class="nav-links">
+    <li><a href="#features">Fitur</a></li>
+    <li><a href="#how">Cara Kerja</a></li>
+    <li><a href="#pricing">Harga</a></li>
+    <li><a href="#testi">Testimoni</a></li>
+    <li><a href="#cta" class="nav-cta">Mulai Gratis →</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="hero-badge">
+    <div class="badge-dot">✦</div>
+    Platform kolaborasi terbaik 2025 — Product Hunt
+  </div>
+
+  <h1>
+    Tim kamu bisa lebih<br>
+    <em>cepat, lebih </em>
+    <span class="typewriter-wrap"><span id="typewriter"></span></span>
+  </h1>
+
+  <p class="hero-sub">
+    Syncra menyatukan komunikasi, manajemen proyek, dan analitik dalam satu platform yang terasa seperti pikiran tim kamu sendiri.
+  </p>
+
+  <div class="hero-actions">
+    <button class="btn-primary">Coba Gratis 14 Hari</button>
+    <button class="btn-secondary">▶ Lihat Demo</button>
+  </div>
+
+  <div class="hero-stats">
+    <div>
+      <div class="stat-num">12K+</div>
+      <div class="stat-label">Tim aktif</div>
+    </div>
+    <div>
+      <div class="stat-num">98%</div>
+      <div class="stat-label">Tingkat kepuasan</div>
+    </div>
+    <div>
+      <div class="stat-num">4.9★</div>
+      <div class="stat-label">Rating rata-rata</div>
+    </div>
+    <div>
+      <div class="stat-num">3x</div>
+      <div class="stat-label">Lebih produktif</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="features-header reveal">
+    <div class="sec-tag">Fitur Unggulan</div>
+    <h2 class="sec-h2">Semua yang kamu butuhkan,<br><em>dalam satu tempat</em></h2>
+    <p class="sec-p">Tidak perlu berpindah-pindah aplikasi. Syncra mengintegrasikan semua alat kerja tim dalam satu antarmuka yang intuitif.</p>
+  </div>
+  <div class="feat-grid">
+    <div class="feat-card reveal">
+      <div class="feat-icon">⚡</div>
+      <h3>Real-time Sync</h3>
+      <p>Setiap perubahan terjadi secara instan. Tidak ada lag, tidak ada konflik. Tim kamu selalu melihat versi terbaru.</p>
+      <a href="#" class="feat-link">Pelajari lebih →</a>
+    </div>
+    <div class="feat-card reveal" style="transition-delay:0.1s">
+      <div class="feat-icon">🧠</div>
+      <h3>AI Assistant</h3>
+      <p>Asisten AI yang memahami konteks proyek kamu — menulis ringkasan, membuat tugas, hingga menganalisis progres otomatis.</p>
+      <a href="#" class="feat-link">Pelajari lebih →</a>
+    </div>
+    <div class="feat-card reveal" style="transition-delay:0.2s">
+      <div class="feat-icon">📊</div>
+      <h3>Smart Analytics</h3>
+      <p>Dashboard analitik yang menampilkan bottleneck tim, prediksi deadline, dan rekomendasi peningkatan produktivitas.</p>
+      <a href="#" class="feat-link">Pelajari lebih →</a>
+    </div>
+    <div class="feat-card reveal" style="transition-delay:0.05s">
+      <div class="feat-icon">🔐</div>
+      <h3>Keamanan Enterprise</h3>
+      <p>End-to-end encryption, SSO, audit log, dan compliance SOC 2 Type II. Data kamu aman di tempat yang tepat.</p>
+      <a href="#" class="feat-link">Pelajari lebih →</a>
+    </div>
+    <div class="feat-card reveal" style="transition-delay:0.15s">
+      <div class="feat-icon">🔗</div>
+      <h3>100+ Integrasi</h3>
+      <p>Terhubung dengan Slack, Notion, Figma, GitHub, Jira, dan ratusan tools lainnya dalam hitungan detik.</p>
+      <a href="#" class="feat-link">Pelajari lebih →</a>
+    </div>
+    <div class="feat-card reveal" style="transition-delay:0.25s">
+      <div class="feat-icon">📱</div>
+      <h3>Mobile First</h3>
+      <p>Aplikasi native iOS dan Android dengan offline mode. Kerja dari mana saja tanpa kehilangan sinkronisasi.</p>
+      <a href="#" class="feat-link">Pelajari lebih →</a>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="how-inner">
+    <div>
+      <div class="sec-tag reveal">Cara Kerja</div>
+      <h2 class="sec-h2 reveal">Setup dalam<br><em>3 menit,</em><br>produktif selamanya</h2>
+      <p class="sec-p reveal">Tidak perlu training panjang. Tim kamu langsung paham dan langsung produktif dari hari pertama.</p>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="step-num">01</div>
+          <div class="step-content">
+            <h4>Buat Workspace</h4>
+            <p>Daftarkan tim kamu dalam hitungan detik. Import anggota dari email, Slack, atau Google Workspace.</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">02</div>
+          <div class="step-content">
+            <h4>Hubungkan Tools</h4>
+            <p>Integrasikan semua alat yang sudah kamu gunakan. Syncra belajar dari workflow tim kamu secara otomatis.</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">03</div>
+          <div class="step-content">
+            <h4>Mulai Kolaborasi</h4>
+            <p>Buat proyek, assign tugas, dan pantau progres — semua dalam satu antarmuka yang terasa natural.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mock UI -->
+    <div class="mock-panel reveal">
+      <div class="mock-bar">
+        <div class="mock-dot" style="background:#888;"></div>
+        <div class="mock-dot" style="background:#aaa;"></div>
+        <div class="mock-dot" style="background:#ccc;"></div>
+        <span style="font-size:0.72rem; color:#777; margin-left:8px;">Syncra — Sprint Q2 2025</span>
+      </div>
+      <div class="mock-body">
+        <div class="mock-row">
+          <div class="mock-avatar">RN</div>
+          <div class="mock-text">
+            <div class="mock-title">Redesain halaman onboarding</div>
+            <div class="mock-sub">Rania N. · Jatuh tempo besok</div>
+          </div>
+          <div class="mock-badge badge-live">Live</div>
+        </div>
+        <div class="mock-row">
+          <div class="mock-avatar">BH</div>
+          <div class="mock-text">
+            <div class="mock-title">Integrasi payment gateway</div>
+            <div class="mock-sub">Bagus H. · 3 hari lagi</div>
+          </div>
+          <div class="mock-badge badge-rev">Review</div>
+        </div>
+        <div class="mock-row">
+          <div class="mock-avatar">SA</div>
+          <div class="mock-text">
+            <div class="mock-title">Laporan analytics Q1</div>
+            <div class="mock-sub">Sari A. · Selesai</div>
+          </div>
+          <div class="mock-badge badge-done">✓ Done</div>
+        </div>
+        <div class="mock-row">
+          <div class="mock-avatar">DK</div>
+          <div class="mock-text">
+            <div class="mock-title">Setup CI/CD pipeline</div>
+            <div class="mock-sub">Dito K. · 1 minggu lagi</div>
+          </div>
+          <div class="mock-badge badge-rev">In Progress</div>
+        </div>
+        <div class="typing-row">
+          <div class="mock-avatar" style="width:28px;height:28px;font-size:0.62rem;">AI</div>
+          <div class="typing-dots">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="typing-label">Syncra AI sedang membuat ringkasan sprint...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="pricing-header reveal">
+    <div class="sec-tag">Harga</div>
+    <h2 class="sec-h2">Transparan, <em>tanpa biaya tersembunyi</em></h2>
+    <p class="sec-p">Mulai gratis, upgrade kapan saja. Semua paket sudah termasuk onboarding support.</p>
+  </div>
+  <div class="price-grid">
+    <div class="price-card reveal">
+      <div class="price-plan">Starter</div>
+      <div class="price-amount"><sup>Rp</sup>0<sub>/bln</sub></div>
+      <div class="price-desc">Untuk tim kecil yang baru memulai. Tanpa kartu kredit.</div>
+      <div class="price-feats">
+        <div class="price-feat">5 anggota tim</div>
+        <div class="price-feat">3 proyek aktif</div>
+        <div class="price-feat">5GB penyimpanan</div>
+        <div class="price-feat">Integrasi dasar</div>
+      </div>
+      <button class="price-btn price-btn-outline">Mulai Gratis</button>
+    </div>
+    <div class="price-card featured reveal" style="transition-delay:0.1s">
+      <div class="featured-label">Paling Populer</div>
+      <div class="price-plan">Pro</div>
+      <div class="price-amount"><sup>Rp</sup>299K<sub>/bln</sub></div>
+      <div class="price-desc">Untuk tim yang serius. Semua fitur tanpa batasan.</div>
+      <div class="price-feats">
+        <div class="price-feat">Anggota tidak terbatas</div>
+        <div class="price-feat">Proyek tidak terbatas</div>
+        <div class="price-feat">100GB penyimpanan</div>
+        <div class="price-feat">AI Assistant penuh</div>
+        <div class="price-feat">Analytics lanjutan</div>
+      </div>
+      <button class="price-btn price-btn-filled">Coba 14 Hari Gratis</button>
+    </div>
+    <div class="price-card reveal" style="transition-delay:0.2s">
+      <div class="price-plan">Enterprise</div>
+      <div class="price-amount" style="font-size:2rem; padding-top:4px;">Custom</div>
+      <div class="price-desc">Untuk organisasi besar dengan kebutuhan khusus dan keamanan tingkat tinggi.</div>
+      <div class="price-feats">
+        <div class="price-feat">SSO & SAML</div>
+        <div class="price-feat">Dedicated support</div>
+        <div class="price-feat">Penyimpanan custom</div>
+        <div class="price-feat">SLA 99.99%</div>
+      </div>
+      <button class="price-btn price-btn-outline">Hubungi Sales</button>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testi" id="testi">
+  <div class="testi-header reveal">
+    <div class="sec-tag">Testimoni</div>
+    <h2 class="sec-h2">Dipercaya ribuan <em>tim terbaik</em></h2>
+    <p class="sec-p">Dari startup awal hingga perusahaan Fortune 500, mereka semua memilih Syncra.</p>
+  </div>
+  <div class="testi-grid">
+    <div class="testi-card reveal">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"Syncra mengubah cara tim kami bekerja. Kami 3x lebih cepat dalam deliver proyek sejak menggunakannya. Tidak ada tools lain yang bisa menandingi."</div>
+      <div class="testi-author">
+        <div class="testi-av">AR</div>
+        <div>
+          <div class="testi-name">Arinda Rahma</div>
+          <div class="testi-role">CTO · Fintech Jakarta</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card reveal" style="transition-delay:0.1s">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"AI Assistant-nya luar biasa. Ia tahu persis konteks proyek kami dan memberikan ringkasan yang akurat. Rapat mingguan kami jadi 30 menit lebih singkat."</div>
+      <div class="testi-author">
+        <div class="testi-av">BW</div>
+        <div>
+          <div class="testi-name">Bintang Wicaksono</div>
+          <div class="testi-role">Product Manager · E-commerce</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card reveal" style="transition-delay:0.2s">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"Setup-nya mudah sekali. Dalam satu hari, seluruh tim kami yang tersebar di 4 kota sudah berkolaborasi dengan mulus. Ini yang kami cari selama ini."</div>
+      <div class="testi-author">
+        <div class="testi-av">DP</div>
+        <div>
+          <div class="testi-name">Dira Puspita</div>
+          <div class="testi-role">Operations Lead · Agency Digital</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="cta">
+  <div class="cta-inner">
+    <h2>Siap membuat tim kamu<br><em>bekerja lebih baik?</em></h2>
+    <p>Mulai gratis hari ini. Tidak perlu kartu kredit. Setup dalam 3 menit.</p>
+    <div class="cta-btns">
+      <button class="cta-btn-white">Mulai Gratis Sekarang →</button>
+      <button class="cta-btn-ghost">Jadwalkan Demo</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div class="logo">Sync<span>ra</span></div>
+      <p>Platform kolaborasi tim yang menyatukan komunikasi, proyek, dan analitik dalam satu tempat yang intuitif.</p>
+    </div>
+    <div class="footer-col">
+      <h5>Produk</h5>
+      <a href="#">Fitur</a>
+      <a href="#">Integrasi</a>
+      <a href="#">Harga</a>
+      <a href="#">Changelog</a>
+    </div>
+    <div class="footer-col">
+      <h5>Perusahaan</h5>
+      <a href="#">Tentang Kami</a>
+      <a href="#">Blog</a>
+      <a href="#">Karir</a>
+      <a href="#">Press Kit</a>
+    </div>
+    <div class="footer-col">
+      <h5>Dukungan</h5>
+      <a href="#">Dokumentasi</a>
+      <a href="#">Status</a>
+      <a href="#">Komunitas</a>
+      <a href="#">Kontak</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 Syncra Inc. Hak cipta dilindungi.</span>
+    <span>Privasi · Syarat · Cookie</span>
+  </div>
+</footer>
+
+<script>
+  // ─── CUSTOM CURSOR
+  const dot  = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function animCursor() {
+    dot.style.left  = mx + 'px';
+    dot.style.top   = my + 'px';
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
+    requestAnimationFrame(animCursor);
+  }
+  animCursor();
+
+  // ─── TYPEWRITER
+  const words = ['terorganisir.', 'kolaboratif.', 'efisien.', 'terhubung.', 'inovatif.'];
+  let wi = 0, ci = 0, deleting = false;
+  const el = document.getElementById('typewriter');
+
+  function type() {
+    const word = words[wi];
+    if (!deleting) {
+      el.textContent = word.slice(0, ++ci);
+      if (ci === word.length) { deleting = true; setTimeout(type, 1800); return; }
+      setTimeout(type, 80);
+    } else {
+      el.textContent = word.slice(0, --ci);
+      if (ci === 0) { deleting = false; wi = (wi + 1) % words.length; setTimeout(type, 300); return; }
+      setTimeout(type, 45);
+    }
+  }
+  setTimeout(type, 1200);
+
+  // ─── SCROLL REVEAL
+  const reveals = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(r => obs.observe(r));
+
+  // ─── NAV SHRINK ON SCROLL
+  window.addEventListener('scroll', () => {
+    document.querySelector('nav').style.padding =
+      window.scrollY > 40 ? '14px 56px' : '20px 56px';
+  });
+
+  // ─── COUNTER ANIMATION
+  function animCount(el, target, suffix='', duration=1800) {
+    let start = null;
+    const step = ts => {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      el.textContent = (Number.isInteger(target)
+        ? Math.floor(ease * target)
+        : (ease * target).toFixed(1)) + suffix;
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  const statsObs = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) {
+      const nums = document.querySelectorAll('.stat-num');
+      animCount(nums[0], 12, 'K+');
+      animCount(nums[1], 98, '%');
+      animCount(nums[2], 4.9, '★');
+      animCount(nums[3], 3, 'x');
+      statsObs.disconnect();
+    }
+  }, { threshold: 0.5 });
+  statsObs.observe(document.querySelector('.hero-stats'));
+</script>
+</body>
+</html>

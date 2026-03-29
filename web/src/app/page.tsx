@@ -1,70 +1,114 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useSpring, useTransform, useInView } from "framer-motion";
 import { 
   Sparkles, 
-  FileText, 
-  MessageSquare, 
-  CheckCircle, 
   ArrowRight, 
   Zap, 
   ShieldCheck, 
-  Globe, 
   Star,
   Users,
   Award,
+  CheckCircle2,
+  FileText,
+  Mail,
+  Mic2,
+  Clock,
+  Target,
+  FileCheck,
   ChevronRight,
   Menu,
   X,
-  ArrowUp
+  Plus
 } from "lucide-react";
 
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6 }
+// --- CUSTOM CURSOR COMPONENT ---
+const CustomCursor = () => {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
+  const ringPos = { x: useSpring(0, { damping: 20, stiffness: 100 }), y: useSpring(0, { damping: 20, stiffness: 100 }) };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+      ringPos.x.set(e.clientX);
+      ringPos.y.set(e.clientY);
+    };
+
+    const handleHover = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      setIsHovering(!!target.closest('a, button, [role="button"]'));
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseover", handleHover);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseover", handleHover);
+    };
+  }, [ringPos.x, ringPos.y]);
+
+  return (
+    <>
+      <div 
+        className="fixed top-0 left-0 w-2 h-2 bg-brand-accent rounded-full pointer-events-none z-[9999] -translate-x-1/2 -translate-y-1/2 hidden md:block"
+        style={{ left: mousePos.x, top: mousePos.y }}
+      />
+      <motion.div 
+        className="fixed top-0 left-0 w-9 h-9 border border-brand-accent/40 rounded-full pointer-events-none z-[9998] -translate-x-1/2 -translate-y-1/2 hidden md:block"
+        animate={{ 
+          width: isHovering ? 52 : 36, 
+          height: isHovering ? 52 : 36,
+          backgroundColor: isHovering ? "rgba(28,58,90,0.08)" : "rgba(0,0,0,0)",
+          borderColor: isHovering ? "#1C3A5A" : "rgba(28,58,90,0.45)"
+        }}
+        style={{ left: ringPos.x, top: ringPos.y }}
+      />
+    </>
+  );
 };
 
-const staggerContainer = {
-  animate: {
-    transition: {
-      staggerChildren: 0.1
+// --- COUNTER COMPONENT ---
+const Counter = ({ value, suffix = "", duration = 2 }: { value: number, suffix?: string, duration?: number }) => {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true });
+
+  useEffect(() => {
+    if (isInView) {
+      let start = 0;
+      const end = value;
+      const totalMiliseconds = duration * 1000;
+      const incrementTime = totalMiliseconds / end;
+
+      const timer = setInterval(() => {
+        start += 1;
+        setCount(start);
+        if (start >= end) clearInterval(timer);
+      }, incrementTime > 1 ? incrementTime : 1);
+
+      return () => clearInterval(timer);
     }
-  }
-};
+  }, [isInView, value, duration]);
 
-const words = [
-  "Bikin CV Kerjaan Impian",
-  "Lolos Interview Gampang",
-  "Raih Karir Idaman Kamu",
-  "Libas Semua Kompetisi"
-];
+  return <span ref={ref}>{Number.isInteger(value) ? count : count.toFixed(1)}{suffix}</span>;
+}
 
-export default function Home() {
+// --- TYPEWRITER COMPONENT ---
+const Typewriter = ({ words }: { words: string[] }) => {
   const [index, setIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 500);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   useEffect(() => {
     const handleTyping = () => {
       const currentWord = words[index % words.length];
-      const speed = isDeleting ? 50 : 150;
+      const speed = isDeleting ? 45 : 80;
 
       if (!isDeleting && displayText === currentWord) {
-        setTimeout(() => setIsDeleting(true), 1500);
+        setTimeout(() => setIsDeleting(true), 1800);
       } else if (isDeleting && displayText === "") {
         setIsDeleting(false);
         setIndex((prev) => prev + 1);
@@ -77,481 +121,579 @@ export default function Home() {
       }
     };
 
-    const timer = setTimeout(handleTyping, isDeleting ? 50 : 150);
+    const timer = setTimeout(handleTyping, isDeleting ? 45 : 80);
     return () => clearTimeout(timer);
-  }, [displayText, isDeleting, index]);
+  }, [displayText, isDeleting, index, words]);
 
   return (
-    <main className="min-h-screen bg-[#020617] text-slate-200 selection:bg-primary/30 overflow-x-hidden">
-      {/* Dynamic Background */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-        <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-primary opacity-20 blur-[100px]"></div>
-      </div>
+    <span className="font-serif text-brand-accent font-bold relative inline-block min-w-[2ch]">
+      {displayText}
+      <span className="inline-block w-[2px] h-[0.9em] bg-brand-accentLight ml-1 animate-pulse align-middle" />
+    </span>
+  );
+};
 
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 border-b border-white/5 backdrop-blur-md bg-black/20">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-          <div 
-            className="flex items-center gap-2 group cursor-pointer"
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          >
-            <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.5)] group-hover:scale-110 transition-transform">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-black text-xl tracking-tight text-white">HireReady<span className="text-primary">.ai</span></span>
-          </div>
-          
-          <div className="hidden md:flex items-center gap-10 text-sm font-bold text-slate-400">
-            <a href="#how-it-works" className="hover:text-white transition-colors tracking-wide">CARA KERJA</a>
-            <a href="#features" className="hover:text-white transition-colors tracking-wide">FITUR</a>
-            <a href="#testimonials" className="hover:text-white transition-colors tracking-wide">TESTIMONI</a>
-            <a href="/pricing" className="hover:text-white transition-colors tracking-wide">HARGA</a>
-          </div>
+export default function Home() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { scrollY } = useScroll();
+  const navPadding = useTransform(scrollY, [0, 50], ["20px 56px", "14px 56px"]);
+  const navBackground = useTransform(scrollY, [0, 50], ["rgba(184, 191, 200, 0)", "rgba(184, 191, 200, 0.85)"]);
 
-          <div className="hidden md:flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost" className="text-slate-300 font-bold hover:text-white hover:bg-white/5">Masuk</Button>
-            </Link>
-            <Link href="/generate">
-              <Button className="bg-primary hover:bg-primary/90 text-white font-bold px-6 shadow-[0_0_20px_rgba(139,92,246,0.3)]">Mulai Sekarang</Button>
-            </Link>
-          </div>
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
 
-          <button className="md:hidden text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            {isMenuOpen ? <X /> : <Menu />}
-          </button>
+  return (
+    <div className="min-h-screen bg-brand-bg text-clay-900 selection:bg-brand-accent/20 cursor-none">
+      <CustomCursor />
+
+      {/* --- NAVIGATION --- */}
+      <motion.nav 
+        style={{ padding: navPadding, backgroundColor: navBackground }}
+        className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between backdrop-blur-md border-b border-black/5"
+      >
+        <div className="font-serif font-bold text-2xl tracking-tight text-clay-900">
+          CV<span className="italic font-light text-brand-accent">Craft</span>
         </div>
-        
+
+        <div className="hidden md:flex items-center gap-9">
+          <ul className="flex gap-9 list-none text-[0.83rem] font-medium text-clay-700">
+            {["Fitur", "Cara Kerja", "Harga", "Testimoni"].map((item) => (
+              <li key={item}>
+                <a 
+                  href={`#${item.toLowerCase().replace(" ", "")}`} 
+                  className="relative group transition-colors hover:text-clay-900 tracking-wide"
+                >
+                  {item}
+                  <span className="absolute -bottom-1 left-0 w-0 h-px bg-clay-900 transition-all group-hover:w-full" />
+                </a>
+              </li>
+            ))}
+          </ul>
+          <Link href={isLoggedIn ? "/dashboard" : "/login"} className="bg-brand-accent text-brand-white px-[22px] py-[9px] rounded-lg font-semibold text-[0.8rem] transition-all hover:bg-brand-accent2 hover:-translate-y-0.5 shadow-lg shadow-brand-accent/20 uppercase tracking-widest">
+            {isLoggedIn ? "Dashboard" : "Mulai Gratis"}
+          </Link>
+        </div>
+
+        <button className="md:hidden p-2 text-clay-900" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          {isMenuOpen ? <X /> : <Menu />}
+        </button>
+
         {/* Mobile Menu */}
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="md:hidden border-t border-white/5 bg-black/95 backdrop-blur-xl overflow-hidden"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="absolute top-full left-0 right-0 bg-brand-bg border-b border-black/5 flex flex-col p-6 gap-6 md:hidden shadow-xl"
             >
-              <div className="flex flex-col p-6 gap-6 font-bold">
-                <a href="#how-it-works" onClick={() => setIsMenuOpen(false)}>Cara Kerja</a>
-                <a href="#features" onClick={() => setIsMenuOpen(false)}>Fitur</a>
-                <a href="#testimonials" onClick={() => setIsMenuOpen(false)}>Testimoni</a>
-                <a href="/pricing" onClick={() => setIsMenuOpen(false)}>Harga</a>
-                <Link href="/login" onClick={() => setIsMenuOpen(false)}>Masuk</Link>
-                <Link href="/generate" onClick={() => setIsMenuOpen(false)}>
-                  <Button className="w-full bg-primary font-bold">Mulai Sekarang</Button>
-                </Link>
-              </div>
+              {["Fitur", "Cara Kerja", "Harga", "Testimoni"].map((item) => (
+                <a key={item} href={`#${item.toLowerCase().replace(" ", "")}`} className="font-bold text-sm" onClick={() => setIsMenuOpen(false)}>{item}</a>
+              ))}
+              <Link href={isLoggedIn ? "/dashboard" : "/login"} className="bg-brand-accent text-brand-white p-4 rounded-xl text-center font-bold" onClick={() => setIsMenuOpen(false)}>
+                {isLoggedIn ? "Dashboard Saya" : "Mulai Sekarang"}
+              </Link>
             </motion.div>
           )}
         </AnimatePresence>
-      </nav>
+      </motion.nav>
 
-      {/* Hero Section */}
-      <section className="relative pt-40 pb-20 md:pt-56 md:pb-40 px-6">
-        <div className="max-w-7xl mx-auto text-center">
+      {/* --- HERO SECTION --- */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-8 pt-[140px] pb-20 text-center overflow-hidden">
+        {/* Grid Background */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(15,25,35,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(15,25,35,0.07)_1px,transparent_1px)] bg-[length:52px_52px] [mask-image:radial-gradient(ellipse_80%_70%_at_50%_50%,black_30%,transparent_100%)] pointer-events-none" />
+        
+        {/* Animated Blobs */}
+        <motion.div 
+          animate={{ x: [0, 40, 0], y: [0, 30, 0], scale: [1, 1.06, 1] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-[-100px] left-[-140px] w-[520px] h-[520px] bg-[#4A6880] rounded-full blur-[80px] opacity-[0.16] pointer-events-none" 
+        />
+        <motion.div 
+          animate={{ x: [0, -30, 0], y: [0, -20, 0] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: -4 }}
+          className="absolute bottom-[-80px] right-[-80px] w-[380px] h-[380px] bg-brand-accent rounded-full blur-[80px] opacity-[0.16] pointer-events-none" 
+        />
+        <motion.div 
+          animate={{ x: [0, 20, 0], y: [0, 40, 0] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: -8 }}
+          className="absolute top-[40%] left-[60%] w-[280px] h-[280px] bg-[#6A8AA0] rounded-full blur-[80px] opacity-[0.16] pointer-events-none" 
+        />
+
+        <div className="relative z-10 max-w-5xl mx-auto flex flex-col items-center">
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-black text-primary mb-10 backdrop-blur-sm tracking-widest uppercase"
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 px-4 py-1.5 bg-white/35 border border-black/10 rounded-full backdrop-blur-md text-[0.73rem] font-medium text-clay-700 mb-8"
           >
-            <Zap className="w-3.5 h-3.5 fill-primary" />
-            Next-Gen AI Career Lab
+            <div className="w-5 h-5 bg-brand-accent rounded-full flex items-center justify-center text-[0.6rem] text-brand-white">✦</div>
+            Didukung AI · Tanpa berbohong, cukup pilih diksi yang tepat
           </motion.div>
 
-          <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-white mb-8 leading-[0.95]">
-            <span className="block mb-2">Kerja Impian? Serahin ke AI</span>
-            <span className="text-gradient-primary h-[1.2em] inline-block min-w-[300px]">
-              {displayText}<span className="animate-pulse text-white">|</span>
-            </span>
-          </h1>
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="font-serif text-[clamp(2.8rem,6vw,5.2rem)] font-bold leading-[1.05] tracking-tight text-clay-900 max-w-[860px]"
+          >
+            Satu CV jadi banyak versi,<br />
+            <em className="italic font-light text-clay-600">tanpa kerja</em>{" "}
+            <div className="mt-2 min-h-[1.15em] overflow-visible">
+              <Typewriter words={['berulang.', 'manual.', 'dari nol.', 'lagi.']} />
+            </div>
+          </motion.h1>
 
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-14 leading-relaxed font-medium"
+            transition={{ delay: 0.55 }}
+            className="mt-7 text-base md:text-lg text-clay-700 max-w-[540px] font-light leading-relaxed"
           >
-            Gak perlu pusing nulis berjam-jam. Pake AI HireReady, CV dan cover letter kamu bakalan otomatis 'nge-glow up' dan lolos ATS dalam sekejap. Yuk, jemput karir impianmu!
+            Tempel lowongan kerja, CVCraft langsung menyesuaikan bahasa, urutan, dan diksi CV kamu agar lebih relevan — tanpa mengarang fakta. Hemat jam kerja, tingkatkan peluang dipanggil.
           </motion.p>
 
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex flex-col sm:flex-row gap-5 justify-center items-center"
+            transition={{ delay: 0.7 }}
+            className="mt-[42px] flex flex-wrap justify-center items-center gap-[14px]"
           >
-            <Link href="/generate">
-              <Button size="lg" className="h-16 px-12 text-lg font-black bg-primary hover:bg-primary/90 text-white group shadow-[0_20px_40px_-10px_rgba(139,92,246,0.3)] transition-all hover:scale-105 active:scale-95">
-                Gas, Bikin CV Sekarang <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
+            <Link href={isLoggedIn ? "/dashboard" : "/generate"} className="bg-brand-accent text-brand-white px-8 py-3.5 rounded-xl font-bold text-[0.88rem] tracking-wide shadow-xl shadow-brand-accent/28 transition-all hover:bg-brand-accent2 hover:-translate-y-0.5 hover:shadow-2xl flex items-center">
+              {isLoggedIn ? "Kembali ke Dashboard" : "Optimalkan CV Sekarang"} <ArrowRight className="ml-2 w-4 h-4" />
             </Link>
-            <Button variant="ghost" size="lg" className="h-16 px-10 text-lg font-bold text-slate-300 hover:text-white hover:bg-white/5 border border-white/10 rounded-2xl">
+            <button className="bg-white/35 text-clay-800 border border-black/10 px-8 py-3.5 rounded-xl font-medium text-[0.88rem] backdrop-blur-md transition-all hover:bg-white/55 hover:-translate-y-0.5">
               Lihat Demo
-            </Button>
+            </button>
           </motion.div>
-          
+
           <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="mt-16 flex items-center justify-center gap-8 md:gap-14 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-700"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.85 }}
+            className="mt-16 pt-10 border-t border-black/10 flex flex-wrap justify-center gap-12"
           >
-            <div className="flex items-center gap-2">
-               <ShieldCheck className="w-5 h-5" />
-               <span className="text-xs font-black uppercase tracking-widest">Aman & Terenkripsi</span>
+            <div className="flex flex-col items-center">
+              <div className="font-serif text-[2.2rem] font-bold text-clay-900"><Counter value={24} suffix="K+" /></div>
+              <div className="text-[0.7rem] font-normal text-clay-600 uppercase tracking-wider mt-px">CV Dioptimalkan</div>
             </div>
-            <div className="flex items-center gap-2">
-               <Award className="w-5 h-5" />
-               <span className="text-xs font-black uppercase tracking-widest">Kualitas Ekspor Premium</span>
+            <div className="flex flex-col items-center">
+              <div className="font-serif text-[2.2rem] font-bold text-clay-900"><Counter value={8} suffix="K+" /></div>
+              <div className="text-[0.7rem] font-normal text-clay-600 uppercase tracking-wider mt-px">Pengguna Aktif</div>
             </div>
-            <div className="flex items-center gap-2">
-               <Star className="w-5 h-5 fill-current" />
-               <span className="text-xs font-black uppercase tracking-widest">Rating 4.9/5</span>
+            <div className="flex flex-col items-center">
+              <div className="font-serif text-[2.2rem] font-bold text-clay-900"><Counter value={3.2} suffix="x" /></div>
+              <div className="text-[0.7rem] font-normal text-clay-600 uppercase tracking-wider mt-px">Peluang Panggilan</div>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="font-serif text-[2.2rem] font-bold text-clay-900"><Counter value={10} suffix="x" /></div>
+              <div className="text-[0.7rem] font-normal text-clay-600 uppercase tracking-wider mt-px">Lebih Cepat</div>
             </div>
           </motion.div>
         </div>
+      </section>
 
-        {/* Floating Dashboard Preview */}
-        <motion.div 
-          initial={{ opacity: 0, y: 100 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 1 }}
-          className="mt-24 max-w-6xl mx-auto relative px-4"
-        >
-          <div className="absolute inset-x-0 -top-20 h-[400px] bg-primary/20 blur-[160px] rounded-full opacity-30 pointer-events-none" />
-          
-          <div className="relative glass-dark rounded-[3rem] border border-white/10 p-3 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)] group overflow-visible">
-             <div className="relative rounded-[2.5rem] overflow-hidden bg-[#020617] shadow-inner aspect-[16/10] md:aspect-[16/9]">
-                {/* Browser-style Header */}
-                <div className="absolute top-0 w-full h-11 bg-white/5 backdrop-blur-md flex items-center px-6 gap-2 z-10 border-b border-white/5">
-                   <div className="flex gap-1.5">
-                      <div className="w-2.5 h-2.5 rounded-full bg-red-500/40" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-amber-500/40" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/40" />
-                   </div>
-                   <div className="mx-auto h-5 w-1/3 bg-white/5 rounded-full border border-white/5 flex items-center justify-center">
-                      <div className="text-[9px] text-slate-500 font-bold tracking-widest flex items-center gap-2 uppercase">
-                         <ShieldCheck className="w-3 h-3" /> Secure AI Neural Link
-                      </div>
-                   </div>
-                </div>
+      {/* --- PAIN SECTION --- */}
+      <section id="pain" className="bg-clay-800 py-[100px] px-8 text-brand-white">
+        <div className="max-w-[900px] mx-auto flex flex-col items-center text-center">
+          <motion.div 
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex items-center gap-2 text-[0.67rem] font-bold uppercase tracking-[0.14em] text-clay-300 mb-4"
+          >
+            <div className="w-6 h-[1px] bg-current" /> Masalah yang Kamu Hadapi
+          </motion.div>
+          <motion.h2 
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="font-serif text-[clamp(2rem,3.5vw,3rem)] font-bold max-w-[700px] leading-[1.12] tracking-tight"
+          >
+            Kirim CV ke 20 tempat, tapi <em className="italic font-light text-clay-400">isinya sama semua?</em>
+          </motion.h2>
 
-                {/* Main Content: User Custom Image */}
-                <div className="h-full pt-11 relative">
-                   <img 
-                     src="/custom_dashboard_preview.png" 
-                     alt="HireReady.ai Transformation Preview" 
-                     className="w-full h-full object-cover transform scale-100 group-hover:scale-[1.01] transition-transform duration-1000 pointer-events-none"
-                   />
-                   <div className="absolute inset-0 bg-gradient-to-t from-[#020617]/50 via-transparent to-transparent opacity-30" />
-                </div>
-             </div>
-
-             {/* Floating AI Score Badge - Positioned to pop out even more */}
-             <motion.div 
-                animate={{ y: [0, -15, 0] }}
-                transition={{ repeat: Infinity, duration: 4 }}
-                className="absolute -top-12 -right-12 glass-accent p-8 rounded-[3rem] shadow-[0_20px_60px_-10px_rgba(139,92,246,0.5)] z-20 hidden md:block border border-primary/20 backdrop-blur-2xl"
-              >
-                 <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 bg-primary/30 rounded-2xl flex items-center justify-center shadow-inner">
-                       <Sparkles className="w-10 h-10 text-primary animate-pulse" />
-                    </div>
-                    <div>
-                       <p className="text-xs font-black uppercase tracking-widest text-primary mb-1">Neural Match</p>
-                       <p className="text-4xl font-black text-white tracking-tighter">98.4<span className="text-primary">%</span></p>
-                    </div>
-                 </div>
-              </motion.div>
-
-              {/* Success Notification Floating */}
+          <div className="grid md:grid-cols-3 gap-[18px] mt-[52px]">
+            {[
+              { icon: "📋", title: "Syarat lowongan berbeda-beda", desc: "Satu posisi minta \"komunikasi\", yang lain minta \"negosiasi\". Padahal kamu punya keduanya — tinggal cara penyebutannya yang harus disesuaikan." },
+              { icon: "⏳", title: "Edit manual = buang waktu", desc: "Menyesuaikan CV satu per satu butuh berjam-jam dan tetap ada risiko lupa menyesuaikan bagian tertentu. Hasilnya: CV yang masih terasa generik.", delay: 0.1 },
+              { icon: "🎯", title: "ATS sering tidak lolos", desc: "Banyak perusahaan pakai sistem ATS yang menyaring keyword. CV kamu bisa gugur di tahap pertama bukan karena tidak kompeten, tapi karena kata-katanya tidak nyambung.", delay: 0.2 }
+            ].map((card, i) => (
               <motion.div 
-                animate={{ y: [0, 10, 0] }}
-                transition={{ repeat: Infinity, duration: 5, delay: 1 }}
-                className="absolute -bottom-12 -left-12 glass-dark p-6 rounded-[2.5rem] shadow-2xl z-20 hidden lg:flex items-center gap-4 border border-white/10"
+                key={i}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: card.delay }}
+                className="bg-white/5 border border-white/10 p-7 rounded-2xl text-left"
               >
-                 <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center border border-emerald-500/20">
-                    <CheckCircle className="w-6 h-6 text-emerald-500" />
-                 </div>
-                 <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">System Alert</p>
-                    <p className="text-sm font-black text-white">ATS Optimization Complete</p>
-                 </div>
+                <div className="text-2xl mb-3.5">{card.icon}</div>
+                <h4 className="font-serif text-[1rem] font-bold text-clay-100 mb-2">{card.title}</h4>
+                <p className="text-[0.8rem] text-clay-400 leading-relaxed font-light">{card.desc}</p>
               </motion.div>
+            ))}
           </div>
-        </motion.div>
+        </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-20 border-y border-white/5 bg-black/20">
-         <div className="max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-20 text-center">
-               {[
-                 { label: "Pengguna Aktif", value: "50,000+" },
-                 { label: "Resume Dibuat", value: "120,000+" },
-                 { label: "Peningkatan Panggilan", value: "3x" },
-                 { label: "Negara", value: "15+" }
-               ].map((stat, i) => (
-                 <div key={i}>
-                    <p className="text-4xl md:text-5xl font-black text-white mb-2 tracking-tighter">{stat.value}</p>
-                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest">{stat.label}</p>
-                 </div>
-               ))}
+      {/* --- FEATURES SECTION --- */}
+      <section id="fitur" className="bg-brand-surface py-[100px] px-8">
+        <div className="max-w-7xl mx-auto flex flex-col items-center">
+          <div className="text-center mb-16 flex flex-col items-center">
+            <div className="flex items-center gap-2 text-[0.67rem] font-bold uppercase tracking-[0.14em] text-clay-600 mb-4">
+              <div className="w-6 h-[1px] bg-current" /> Fitur
             </div>
-         </div>
+            <h2 className="font-serif text-[clamp(2rem,3.5vw,3rem)] font-bold tracking-tight text-clay-900">
+              Tiga alat, <em className="italic font-light text-clay-600">satu tujuan:</em> kamu dipanggil
+            </h2>
+            <p className="mt-3 text-base font-light text-clay-700 max-w-lg">Dari CV hingga simulasi wawancara, semua disesuaikan dengan lowongan yang kamu tuju.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-5 w-full">
+            {[
+              { icon: <FileText className="w-4 h-4 text-brand-white" />, title: "CV / Resume Optimizer", desc: "Paste CV kamu dan paste syarat lowongan. AI kami akan menyesuaikan diksi, urutan poin, dan penekanan pengalaman agar lebih relevan — tanpa menambah fakta baru.", tag: "Gratis", tagType: "free" },
+              { icon: <Mail className="w-4 h-4 text-brand-white" />, title: "Cover Letter Generator", desc: "Cover letter profesional yang ditulis spesifik untuk lowongan yang kamu tuju. Bukan template basi — tapi surat yang menyebut keahlian relevan dan terasa personal.", tag: "Pro", tagType: "pro", delay: 0.1 },
+              { icon: <Mic2 className="w-4 h-4 text-brand-white" />, title: "Interview Simulation Q&A", desc: "Berlatih wawancara sebelum hari H. AI menghasilkan prediksi pertanyaan berdasarkan job description dan CV kamu, lengkap dengan panduan jawaban ideal STAR.", tag: "Elite", tagType: "elite", delay: 0.2 }
+            ].map((feature, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: feature.delay }}
+                whileHover={{ y: -6 }}
+                className="relative bg-brand-bg border border-black/5 p-8 rounded-[20px] transition-all duration-300 group overflow-hidden hover:bg-brand-white hover:shadow-2xl"
+              >
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-brand-accent/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="w-11 h-11 bg-brand-accent rounded-xl flex items-center justify-center mb-5">
+                  {feature.icon}
+                </div>
+                <h3 className="font-serif text-[1.15rem] font-bold text-clay-900 mb-2.5 tracking-tight">{feature.title}</h3>
+                <p className="text-[0.82rem] text-clay-700 leading-[1.75] font-light">{feature.desc}</p>
+                <span className={`inline-block mt-4 px-2.5 py-0.5 rounded-full text-[0.62rem] font-bold uppercase tracking-widest ${
+                  feature.tagType === 'free' ? 'bg-brand-accent/10 text-brand-accent' : 
+                  feature.tagType === 'pro' ? 'bg-brand-accent/15 text-brand-accent2' : 
+                  'bg-clay-800/10 text-clay-800'
+                }`}>
+                  {feature.tag}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </section>
 
-      <section className="py-16 border-b border-white/5 bg-black/40">
-         <div className="max-w-7xl mx-auto px-6 overflow-hidden">
-            <p className="text-center text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-[0.4em] mb-12 opacity-70">Satu langkah lebih dekat ke perusahaan impian Anda</p>
-            <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
-               {[
-                 { name: "Google", src: "/logo-google.png", scale: "scale-[2.8]" },
-                 { name: "Gojek", src: "/logo-gojek.png", scale: "scale-[0.8]" },
-                 { name: "Tokopedia", src: "/logo-tokopedia.png", scale: "scale-[1.2]" },
-                 { name: "Shopee", src: "/logo-shopee.png", scale: "scale-[1.3]" },
-                 { name: "Traveloka", src: "/logo-traveloka.png", scale: "scale-[1.2]" }
-               ].map((logo, i) => (
-                  <div key={i} className="flex items-center justify-center w-24 md:w-40 h-16">
-                    <motion.img 
-                      src={logo.src} 
-                      alt={logo.name} 
-                      className={`max-h-full max-w-full w-auto opacity-50 hover:opacity-100 transition-all duration-500 grayscale hover:grayscale-0 ${logo.scale}`}
-                      style={{ 
-                        filter: "brightness(0) invert(1) drop-shadow(0 0 10px rgba(255,255,255,0.2))" 
-                      }}
-                      whileHover={{ scale: 1.1 }}
-                    />
+      {/* --- HOW IT WORKS SECTION --- */}
+      <section id="carakerja" className="bg-brand-bg py-[100px] px-8">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-20 items-center">
+          <motion.div 
+            initial={{ opacity: 0, x: -24 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="flex items-center gap-2 text-[0.67rem] font-bold uppercase tracking-[0.14em] text-clay-600 mb-4">
+              <div className="w-6 h-[1px] bg-current" /> Cara Kerja
+            </div>
+            <h2 className="font-serif text-4xl md:text-5xl font-bold leading-tight text-clay-900">
+              Tiga langkah,<br /><em className="italic font-light text-clay-600">hasil yang berbeda</em>
+            </h2>
+            <p className="mt-3 text-base font-light text-clay-700 max-w-sm mb-10">Proses yang dirancang agar kamu tidak perlu berpikir keras. Cukup paste, review, dan kirim.</p>
+            
+            <div className="flex flex-col">
+              {[
+                { num: "01", title: "Paste CV & Syarat Lowongan", desc: "Masukkan CV kamu (teks atau PDF) dan tempel job description lowongan target. Tidak perlu format khusus." },
+                { num: "02", title: "AI Menganalisis & Menyesuaikan", desc: "Sistem membaca keyword penting dari JD, lalu menyesuaikan diksi dan penekanan di CV kamu agar lebih tepat sasaran." },
+                { num: "03", title: "Review & Unduh", desc: "Kamu tetap pemegang kendali. Review hasil, edit jika perlu, lalu unduh versi PDF yang sudah dioptimalkan." },
+                { num: "04", title: "Latihan Interview (Elite)", desc: "Gunakan modul simulasi untuk berlatih menjawab pertanyaan yang muncul berdasarkan posisi dan CV kamu." }
+              ].map((step, i) => (
+                <div key={i} className="flex gap-5 py-7 border-b border-black/5 last:border-0 group transition-all duration-300 hover:pl-[8px] cursor-default">
+                  <span className="font-serif text-4xl font-bold text-clay-300 transition-colors group-hover:text-brand-accent">{step.num}</span>
+                  <div>
+                    <h4 className="font-serif text-[1.05rem] font-bold text-clay-900 mb-1.5">{step.title}</h4>
+                    <p className="text-[0.8rem] text-clay-600 font-light leading-relaxed max-w-sm">{step.desc}</p>
                   </div>
-               ))}
+                </div>
+              ))}
             </div>
-         </div>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, x: 24 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="bg-brand-surface rounded-[24px] border border-white/50 shadow-2xl p-0 overflow-hidden"
+          >
+            <div className="bg-brand-surface2 px-5 py-3.5 flex items-center gap-2.5 border-b border-black/10">
+              <div className="w-2.5 h-2.5 rounded-full bg-[#d9534f]" />
+              <div className="w-2.5 h-2.5 rounded-full bg-[#f0ad4e]" />
+              <div className="w-2.5 h-2.5 rounded-full bg-[#5cb85c]" />
+              <span className="ml-2 text-[0.72rem] font-medium text-clay-600">CVCraft · Optimasi CV</span>
+            </div>
+            <div className="p-8 space-y-4">
+              <div>
+                <div className="text-[0.6rem] font-bold uppercase tracking-widest text-brand-accent mb-2">Keyword dari Job Description</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {["Manajemen Proyek", "Komunikasi", "Kepemimpinan", "Data Analisis", "Agile", "Presentasi"].map((tag, i) => (
+                    <span key={i} className={`text-[0.62rem] font-semibold px-2.5 py-0.5 rounded-full border ${[0,1,3,5].includes(i) ? 'bg-brand-accent text-brand-white border-transparent' : 'bg-brand-accent/10 text-brand-accent border-brand-accent/20'}`}>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-[0.6rem] font-bold uppercase tracking-widest text-brand-accent mb-2 mt-4">CV Kamu (Sebelum)</div>
+                <div className="h-2 w-full bg-clay-300/40 rounded-full mb-1.5" />
+                <div className="h-2 w-[82%] bg-clay-300/40 rounded-full mb-1.5" />
+                <div className="h-2 w-[60%] bg-clay-300/40 rounded-full" />
+              </div>
+
+              <div>
+                <div className="text-[0.6rem] font-bold uppercase tracking-widest text-brand-accent mb-2 mt-4">Versi Dioptimalkan ✦</div>
+                <div className="h-2 w-full bg-brand-accent/40 rounded-full mb-1.5 animate-pulse" />
+                <div className="h-2 w-[82%] bg-brand-accent/40 rounded-full mb-1.5 animate-pulse" />
+                <div className="h-2 w-full bg-clay-300/50 rounded-full mb-1.5" />
+                <div className="h-2 w-[40%] bg-clay-300/50 rounded-full" />
+              </div>
+
+              <div className="flex items-center gap-2.5 pt-2">
+                <div className="w-7 h-7 bg-brand-accent rounded-full flex items-center justify-center text-[0.58rem] font-bold text-brand-white">AI</div>
+                <div className="flex gap-1">
+                  <span className="w-1.5 h-1.5 bg-clay-500 rounded-full animate-bounce" />
+                  <span className="w-1.5 h-1.5 bg-clay-500 rounded-full animate-bounce [animation-delay:0.2s]" />
+                  <span className="w-1.5 h-1.5 bg-clay-500 rounded-full animate-bounce [animation-delay:0.4s]" />
+                </div>
+                <span className="text-[0.68rem] text-clay-600">Menyesuaikan diksi pengalaman kerja...</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </section>
 
-      {/* How it Works Section */}
-      <section id="how-it-works" className="py-32 px-6 bg-black/20">
-         <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-24">
-               <h2 className="text-4xl md:text-5xl font-black text-white tracking-tighter mb-6">3 Langkah Menuju <span className="text-primary italic">Pekerjaan Impian</span></h2>
-               <p className="text-slate-400 font-medium max-w-xl mx-auto">Kami menyederhanakan proses melamar kerja yang rumit menjadi sangat mudah dan cepat.</p>
+      {/* --- PRICING SECTION --- */}
+      <section id="harga" className="bg-brand-surface py-[100px] px-8">
+        <div className="max-w-7xl mx-auto flex flex-col items-center">
+          <div className="text-center mb-12 flex flex-col items-center">
+            <div className="flex items-center gap-2 text-[0.67rem] font-bold uppercase tracking-[0.14em] text-clay-600 mb-4">
+              <div className="w-6 h-[1px] bg-current" /> Harga
             </div>
-            <div className="grid md:grid-cols-3 gap-12 relative">
-               <div className="hidden md:block absolute top-12 left-[20%] right-[20%] h-0.5 bg-gradient-to-r from-primary/10 via-primary/50 to-primary/10" />
-               
-               {[
-                 { step: "01", title: "Drop CV Kamu", desc: "Gak usah ribet, tinggal upload CV lama atau profil LinkedIn kamu. AI kami beresin sisanya." },
-               { step: "02", title: "Biar AI Beraksi", desc: "Pilih kerjaan yang kamu mau, AI langsung 'sulap' CV kamu biar pas banget sama apa yang HRD cari." },
-               { step: "03", title: "Cus, Lamar!", desc: "Download PDF-nya, langsung sebar lamaran. Siap-siap kebanjiran panggilan interview ya!" }
-               ].map((item, i) => (
-                  <div key={i} className="relative z-10 flex flex-col items-center text-center group">
-                     <div className="w-24 h-24 rounded-full glass-dark border border-primary/20 flex items-center justify-center mb-8 shadow-[0_0_30px_rgba(139,92,246,0.15)] group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-500">
-                        <span className="text-3xl font-black text-white">{item.step}</span>
-                     </div>
-                     <h3 className="text-xl font-black text-white mb-4 tracking-tight">{item.title}</h3>
-                     <p className="text-slate-400 font-medium leading-relaxed max-w-sm">{item.desc}</p>
+            <h2 className="font-serif text-[clamp(2rem,3.5vw,3rem)] font-bold tracking-tight text-clay-900 leading-tight">
+              Mulai gratis, <em className="italic font-light text-clay-600">upgrade sesuai kebutuhan</em>
+            </h2>
+            <p className="mt-3 text-base text-clay-700 font-light max-w-lg">Tidak perlu kartu kredit untuk memulai. Bayar hanya ketika kamu butuh lebih.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-[18px] max-w-[960px] w-full">
+            {[
+              { 
+                type: "free", 
+                plan: "Starter", 
+                amount: "0", 
+                desc: "Untuk eksplorasi awal karir kamu.", 
+                perks: ["1 Base CV", "3 AI Generations", "Ekspor PDF Standard", "Tema Dasar Premium"], 
+                btn: "Mulai Gratis",
+                colorClass: "border-t-brand-surface2",
+                accentColor: "bg-brand-surface2"
+              },
+              { 
+                type: "credits_10", 
+                plan: "Daya Gedor", 
+                amount: "75K", 
+                desc: "Amunisi tambahan untuk lamaran aktif.", 
+                perks: ["10 AI Generations", "ATS-Friendly PDFs", "Logika Surat Lamaran", "Email Support 24h"], 
+                btn: "Beli Amunisi", 
+                featured: true, 
+                delay: 0.1,
+                colorClass: "border-t-brand-accentLight",
+                accentColor: "bg-brand-accentLight"
+              },
+              { 
+                type: "pro", 
+                plan: "Elite Pro", 
+                amount: "250K", 
+                desc: "Kuasai bursa kerja secara mutlak.", 
+                perks: ["Unlimited Base CVs", "AI Tanpa Batas", "Design Premium Navy", "Persiapan Wawancara AI", "Lifetime Access"], 
+                btn: "Aktivasi Akses", 
+                delay: 0.2,
+                colorClass: "border-t-brand-accent",
+                accentColor: "bg-brand-gold",
+                isElite: true
+              }
+            ].map((p, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: p.delay }}
+                whileHover={{ y: -6 }}
+                className={`relative bg-brand-bg rounded-[20px] p-[28px] md:p-[36px] flex flex-col border-[1px] border-black/5 transition-all w-full border-t-[3px] shadow-sm ${p.colorClass} ${
+                  p.featured ? 'scale-105 z-10 shadow-2xl bg-white/40' : ''
+                } ${p.isElite ? 'bg-clay-900 text-brand-white border-t-brand-gold' : ''}`}
+              >
+                {p.featured && (
+                  <div className="absolute top-[-13px] left-1/2 -translate-x-1/2 bg-brand-accent text-brand-white text-[0.62rem] font-bold uppercase px-3.5 py-1 rounded-full tracking-widest shadow-lg">
+                    Pilihan Utama
                   </div>
-               ))}
-            </div>
-         </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="py-32 px-6 relative border-t border-white/5">
-         <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-24">
-               <motion.h2 
-                 initial={{ opacity: 0 }}
-                 whileInView={{ opacity: 1 }}
-                 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tighter"
-               >
-                 Inovasi Karir dengan <span className="text-primary italic">Presisi AI</span>
-               </motion.h2>
-               <p className="text-slate-400 font-medium max-w-xl mx-auto">Dirancang untuk mengungguli sistem seleksi ATS paling ketat sekalipun.</p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-               {[
-                 {
-                   title: "Optimasi Kilat",
-                   desc: "AI kami pinter banget cari kata kunci yang dibutuhin HRD. CV kamu langsung jadi favorit di sistem ATS!",
-                   icon: FileText,
-                   color: "bg-blue-500/10 text-blue-400"
-                 },
-                 {
-                   title: "Surat Lamaran Anti-Gagal",
-                   desc: "Bikin surat lamaran persuasif tanpa perlu mikir keras. Gak pake drama salah ketik atau kaku.",
-                   icon: MessageSquare,
-                   color: "bg-purple-500/10 text-purple-400"
-                 },
-                 {
-                   title: "Latihan Interview Santai",
-                   desc: "Latihan jawab pertanyaan jebakan interview bareng AI. Makin percaya diri pas hari H!",
-                   icon: Award,
-                   color: "bg-emerald-500/10 text-emerald-400"
-                 }
-               ].map((feature, i) => (
-                 <motion.div 
-                   key={i}
-                   whileHover={{ y: -10 }}
-                   className="group p-10 rounded-[2.5rem] glass-dark border-white/5 hover:border-primary/50 transition-all duration-500"
-                 >
-                   <div className={`w-16 h-16 rounded-2xl ${feature.color} flex items-center justify-center mb-8 shadow-inner group-hover:scale-110 transition-transform`}>
-                     <feature.icon className="w-8 h-8" />
-                   </div>
-                   <h3 className="text-2xl font-black text-white mb-4 tracking-tight">{feature.title}</h3>
-                   <p className="text-slate-400 leading-relaxed font-medium text-sm">
-                     {feature.desc}
-                   </p>
-                 </motion.div>
-               ))}
-            </div>
-         </div>
-      </section>
-
-      {/* Testimonials */}
-      <section id="testimonials" className="py-32 bg-primary/5">
-         <div className="max-w-7xl mx-auto px-6">
-            <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
-               <div className="max-w-2xl">
-                  <h2 className="text-4xl md:text-5xl font-black text-white tracking-tighter leading-none mb-6">Cerita Sukses Pengguna Kami</h2>
-                  <p className="text-slate-400 font-medium leading-relaxed">Mereka yang telah beralih ke cara cerdas untuk mendapatkan pekerjaan impian.</p>
-               </div>
-               <div className="flex items-center gap-3">
-                  <Users className="text-primary" />
-                  <span className="text-xs font-black uppercase tracking-widest">Bergabung dengan 50rb+ profesional</span>
-               </div>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-               {[
-                 {
-                   name: "Adi Nugraha",
-                   role: "Software Engineer",
-                   text: "Gokil banget! Dulu dari 20 lamaran cuma 1 yang manggil, pas pake HireReady naik drastis jadi 8 panggilan interview!",
-                   avatar: "AN"
-                 },
-                 {
-                   name: "Sarah Wijaya",
-                   role: "Product Manager",
-                   text: "AI Cover Letter-nya ngebantu parah. Gak perlu lagi begadang berjam-jam cuma buat bikin satu surat lamaran.",
-                   avatar: "SW"
-                 },
-                 {
-                   name: "Dimas Pratama",
-                   role: "Marketing Head",
-                   text: "Template-nya stylish dan beneran lolos ATS. Akhirnya bisa masuk startup impian berkat bantuan AI Score-nya.",
-                   avatar: "DP"
-                 }
-               ].map((testimonial, i) => (
-                 <div key={i} className="p-10 rounded-[2.5rem] glass-dark border-white/5 relative">
-                    <div className="flex gap-1 mb-8">
-                       {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 text-amber-500 fill-current" />)}
+                )}
+                
+                <div className={`text-[0.75rem] font-bold uppercase tracking-widest mb-4 ${p.isElite ? 'text-brand-gold' : 'text-clay-600'}`}>
+                  {p.plan}
+                </div>
+                
+                <div className={`font-serif text-[3rem] font-bold leading-none tracking-tight ${p.isElite ? 'text-brand-white' : 'text-clay-900'}`}>
+                  <sup className="text-[1.1rem] align-top top-[0.4em] mr-0.5 font-sans font-normal">Rp</sup>
+                  {p.amount}
+                  {p.type === 'pro' && <sub className="text-[0.7rem] font-sans font-bold uppercase tracking-widest ml-1 opacity-60">Lifetime</sub>}
+                </div>
+                
+                <p className={`mt-[10px] mb-6 text-[0.78rem] leading-[1.6] font-light ${p.isElite ? 'text-brand-white/60' : 'text-clay-600'}`}>
+                  {p.desc}
+                </p>
+                
+                <div className="space-y-3 mb-8 flex-grow">
+                  {p.perks.map((perk, idx) => (
+                    <div key={idx} className="flex items-start gap-2.5 text-[0.78rem]">
+                      <div className={`mt-0.5 w-[18px] h-[18px] flex items-center justify-center rounded-full text-[0.65rem] shrink-0 ${
+                        p.isElite ? 'bg-brand-gold/20 text-brand-gold' : 'bg-brand-accent/10 text-brand-accent'
+                      }`}>
+                        <CheckCircle2 className="w-3 h-3" />
+                      </div>
+                      <span className={p.isElite ? 'text-brand-white/80' : 'text-clay-700'}>{perk}</span>
                     </div>
-                    <p className="text-slate-200 font-bold leading-relaxed mb-8 italic">"{testimonial.text}"</p>
-                    <div className="flex items-center gap-4">
-                       <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center font-black text-primary border border-primary/20">{testimonial.avatar}</div>
-                       <div>
-                          <p className="font-black text-white text-sm tracking-tight">{testimonial.name}</p>
-                          <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">{testimonial.role}</p>
-                       </div>
-                    </div>
-                 </div>
-               ))}
-            </div>
-         </div>
+                  ))}
+                </div>
+                
+                <button className={`w-full py-4 rounded-xl font-bold text-[0.82rem] transition-all hover:scale-[1.02] active:scale-[0.98] shadow-md ${
+                  p.isElite 
+                    ? 'bg-brand-gold text-clay-900 hover:bg-white' 
+                    : p.featured 
+                      ? 'bg-brand-accent text-brand-white hover:bg-brand-accent2 shadow-brand-accent/20' 
+                      : 'bg-white/50 text-clay-900 border border-black/5 hover:bg-white'
+                }`}>
+                  {p.btn}
+                </button>
+              </motion.div>
+            ))}
+
+          </div>
+        </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-40 px-6 overflow-hidden relative">
-         <div className="max-w-5xl mx-auto glass-accent rounded-[3.5rem] p-12 md:p-24 text-center relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2" />
-            <div className="relative z-10">
-               <h2 className="text-5xl md:text-7xl font-black text-white mb-8 tracking-tighter leading-none">Siap Gaspol Karir Kamu?</h2>
-               <p className="text-primary-foreground/80 text-lg font-bold max-w-2xl mx-auto mb-14 leading-relaxed">
-                  Gabung sekarang dan biarin AI kami beresin PR karir kamu. Gratis, gak pake ribet, gak pake kartu kredit.
-               </p>
-               <Link href="/generate">
-                 <Button size="lg" className="h-20 px-16 text-2xl font-black bg-white text-primary hover:bg-white/90 rounded-[2rem] shadow-2xl transition-all hover:scale-105">
-                    Gass, Bikin Sekarang <ArrowRight className="ml-4 w-6 h-6" />
-                 </Button>
-               </Link>
+      {/* --- TESTIMONIALS SECTION --- */}
+      <section id="testimoni" className="bg-brand-bg py-[100px] px-8">
+        <div className="max-w-7xl mx-auto flex flex-col items-center">
+          <div className="text-center mb-12 flex flex-col items-center">
+            <div className="flex items-center gap-2 text-[0.67rem] font-bold uppercase tracking-[0.14em] text-clay-600 mb-4">
+              <div className="w-6 h-[1px] bg-current" /> Testimoni
             </div>
-         </div>
+            <h2 className="font-serif text-[clamp(2rem,3.5vw,3rem)] font-bold tracking-tight text-clay-900 leading-tight">
+              Mereka sudah <em className="italic font-light text-clay-600">dapat panggilan lebih banyak</em>
+            </h2>
+            <p className="mt-3 text-base text-clay-700 font-light max-w-[480px]">Dari fresh graduate hingga profesional yang sedang career switch, CVCraft membantu mereka tampil lebih relevan.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-5 w-full">
+            {[
+              { av: "RS", name: "Rafi Santoso", role: "Marketing Executive · Startup", quote: "\"Dulu saya kirim CV yang sama ke 15 tempat dan tidak ada yang merespons. Setelah pakai CVCraft, minggu pertama langsung dapat 3 panggilan interview. Perbedaannya terasa sekali.\"" },
+              { av: "NP", name: "Nadya Pratiwi", role: "Data Analyst · Fresh Graduate UI", quote: "\"Fitur simulasi interview-nya luar biasa. Pertanyaan yang muncul di interview beneran hampir 70% sama dengan prediksi dari CVCraft. Saya jadi jauh lebih percaya diri.\"", delay: 0.1 },
+              { av: "AW", name: "Andhika Wibowo", role: "Product Manager · Ex-Engineer", quote: "\"Saya pakai ini untuk career switch. Cover letter yang dihasilkan terasa sangat personal dan langsung ke inti — HRD bilang surat saya menonjol dibanding kandidat lain.\"", delay: 0.2 }
+            ].map((t, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: t.delay }}
+                whileHover={{ y: -5 }}
+                className="bg-brand-surface border border-black/5 p-8 rounded-[20px] shadow-sm flex flex-col transition-all"
+              >
+                <div className="text-brand-gold text-[0.85rem] mb-3.5 tracking-[2px] opacity-80">★★★★★</div>
+                <p className="text-[0.84rem] text-clay-700 italic leading-[1.8] font-light mb-6 flex-grow">{t.quote}</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 bg-brand-accent flex items-center justify-center rounded-full text-[0.7rem] font-bold text-brand-white shrink-0">{t.av}</div>
+                  <div>
+                    <div className="text-[0.82rem] font-bold text-clay-900">{t.name}</div>
+                    <div className="text-[0.72rem] text-clay-600 mt-0.5">{t.role}</div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-24 border-t border-white/5 bg-black/40">
-        <div className="max-w-7xl mx-auto px-6">
-           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-20">
-              <div className="col-span-2">
-                 <div className="flex items-center gap-2 mb-8">
-                   <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                     <Sparkles className="w-4 h-4 text-white" />
-                   </div>
-                   <span className="font-black text-xl tracking-tight text-white">HireReady<span className="text-primary">.ai</span></span>
-                 </div>
-                 <p className="text-slate-500 max-w-xs font-medium leading-relaxed">Platform kecerdasan buatan untuk akselerasi karir masa depan. Direkayasa untuk membawa Anda ke puncak.</p>
+      {/* --- CTA SECTION --- */}
+      <section id="cta" className="bg-brand-accent py-[100px] px-8 text-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(216,232,245,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(216,232,245,0.05)_1px,transparent_1px)] bg-[length:52px_52px] pointer-events-none" />
+        <div className="max-w-[600px] mx-auto relative z-10 flex flex-col items-center">
+          <motion.h2 
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="font-serif text-[clamp(2.1rem,4vw,3.2rem)] font-bold text-brand-white leading-[1.1] tracking-tight"
+          >
+            CV kamu sudah bagus.<br /><em className="italic font-light text-brand-white/60">Tinggal disesuaikan.</em>
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-5 text-brand-white/70 text-[0.95rem] font-light leading-relaxed"
+          >
+            Mulai gratis hari ini. Tidak perlu kartu kredit. Hasil pertama dalam 3 menit.
+          </motion.p>
+          <motion.div 
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-10 flex flex-wrap gap-3.5 justify-center"
+          >
+            <button className="bg-brand-white text-brand-accent px-8 py-3.5 rounded-xl font-bold text-[0.88rem] transition-all hover:scale-105 active:scale-95">
+              Optimalkan CV Sekarang →
+            </button>
+            <button className="bg-transparent text-brand-white border border-white/35 px-8 py-3.5 rounded-xl font-medium text-[0.88rem] transition-all hover:bg-white/10 hover:-translate-y-0.5">
+              Lihat Contoh Hasil
+            </button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* --- FOOTER --- */}
+      <footer className="bg-clay-900 py-16 px-8 text-clay-400">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-[2fr_1fr_1fr_1fr] gap-[48px] mb-[48px] pb-[48px] border-b border-white/10">
+            <div className="flex flex-col gap-4">
+              <div className="font-serif font-bold text-2xl text-brand-white">CV<span className="italic font-light text-clay-400">Craft</span></div>
+              <p className="text-[0.8rem] text-clay-500 font-light leading-[1.7] max-w-sm">Platform AI yang membantu job seeker Indonesia tampil lebih relevan di setiap lowongan — tanpa berbohong, tanpa kerja manual berulang.</p>
+            </div>
+            {[
+              { h: "Produk", links: ["CV Optimizer", "Cover Letter", "Interview Sim", "Harga"] },
+              { h: "Perusahaan", links: ["Tentang Kami", "Blog", "Karir", "Press Kit"] },
+              { h: "Dukungan", links: ["FAQ", "Panduan", "Komunitas", "Kontak"] }
+            ].map((col, i) => (
+              <div key={i}>
+                <h5 className="text-[0.72rem] font-bold uppercase tracking-widest text-clay-400 mb-6">{col.h}</h5>
+                <ul className="space-y-3">
+                  {col.links.map((link, idx) => (
+                    <li key={idx}><a href="#" className="text-[0.8rem] text-clay-500 hover:text-clay-200 transition-colors">{link}</a></li>
+                  ))}
+                </ul>
               </div>
-              <div>
-                 <h4 className="font-black text-white uppercase text-xs tracking-[0.2em] mb-8">Platform</h4>
-                 <ul className="space-y-4 text-slate-500 text-sm font-bold">
-                    <li><a href="#" className="hover:text-primary transition-colors">Fitur</a></li>
-                    <li><a href="/pricing" className="hover:text-primary transition-colors">Harga</a></li>
-                    <li><a href="#" className="hover:text-primary transition-colors">Integrasi</a></li>
-                 </ul>
-              </div>
-              <div>
-                 <h4 className="font-black text-white uppercase text-xs tracking-[0.2em] mb-8">Dukungan</h4>
-                 <ul className="space-y-4 text-slate-500 text-sm font-bold">
-                    <li><a href="#" className="hover:text-primary transition-colors">Bantuan</a></li>
-                    <li><a href="#" className="hover:text-primary transition-colors">Edukasi AI</a></li>
-                    <li><a href="#" className="hover:text-primary transition-colors">Kontak</a></li>
-                    <li><a href="#" className="hover:text-primary transition-colors">Discord</a></li>
-                 </ul>
-              </div>
-              <div>
-                 <h4 className="font-black text-white uppercase text-xs tracking-[0.2em] mb-8">Legal</h4>
-                 <ul className="space-y-4 text-slate-500 text-sm font-bold">
-                    <li><a href="#" className="hover:text-primary transition-colors">Privasi</a></li>
-                    <li><a href="#" className="hover:text-primary transition-colors">Ketentuan</a></li>
-                    <li><a href="#" className="hover:text-primary transition-colors">Cookie</a></li>
-                 </ul>
-              </div>
-           </div>
-           
-           <div className="flex flex-col md:flex-row justify-between items-center pt-12 border-t border-white/5 gap-6">
-              <p className="text-slate-600 text-[10px] font-black uppercase tracking-widest">© 2026 HireReady Labs (PT HireReady Internasional). All rights reserved.</p>
-              <div className="flex gap-8">
-                 <Globe className="w-4 h-4 text-slate-600" />
-                 <div className="flex gap-6">
-                    <a href="#" className="text-slate-600 hover:text-white transition-colors"><MessageSquare className="w-4 h-4" /></a>
-                    <a href="#" className="text-slate-600 hover:text-white transition-colors"><Users className="w-4 h-4" /></a>
-                    <a href="#" className="text-slate-600 hover:text-white transition-colors"><Award className="w-4 h-4" /></a>
-                 </div>
-              </div>
-           </div>
+            ))}
+          </div>
+          <div className="flex flex-col md:flex-row justify-between text-[0.75rem] text-clay-600">
+            <span>© 2026 CVCraft. Hak cipta dilindungi.</span>
+            <Link href="/terms" className="mt-4 md:mt-0 hover:text-brand-white transition-colors cursor-pointer">
+              Privasi · Syarat · Ketentuan
+            </Link>
+          </div>
         </div>
       </footer>
-
-      {/* Back to Top Button */}
-      <AnimatePresence>
-        {showScrollTop && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            className="fixed bottom-10 right-10 z-[60]"
-          >
-            <Button 
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="w-14 h-14 rounded-full bg-primary hover:bg-primary/90 text-white shadow-[0_10px_30px_rgba(139,92,246,0.3)] flex items-center justify-center group"
-            >
-              <ArrowUp className="w-6 h-6 group-hover:-translate-y-1 transition-transform" />
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </main>
+    </div>
   );
 }
