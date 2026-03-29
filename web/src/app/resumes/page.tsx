@@ -25,7 +25,8 @@ import {
   Sparkles,
   AlertTriangle,
   Download,
-  Calendar
+  Calendar,
+  ChevronRight
 } from "lucide-react";
 import { toast } from "sonner";
 
