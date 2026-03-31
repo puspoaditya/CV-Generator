@@ -1,45 +1,37 @@
-# Issue: High-Fidelity PDF Resume Generation using Playwright/Puppeteer
+# Issue: Redesign "Generate Journey" - CV Master & CV Optimize
 
 ## Latar Belakang
-Saat ini, ekspor PDF mungkin masih menggunakan pendekatan berbasis *client-side* (seperti `html2pdf.js` atau re-render ke `window.print()`), yang seringkali menghasilkan format, margin, resolusi, dan layout yang kurang konsisten. Pengguna menginginkan hasil PDF yang sangat terpoles (*highly polished*), persis seperti desain template visual yang elegan terlampir.
+Alur kerja (journey) saat ini dalam membuat atau meng-generate CV terasa kurang terstruktur dan menghasilkan nama CV atau format yang terlalu seragam (contoh: hanya "Optimized"). Pengguna membutuhkan logika manajemen CV yang membedakan antara "Data Mentah/Utama" (CV Master) dan "Data Hasil Revisi AI" (CV Optimize) yang disesuaikan per lamaran/pekerjaan.
 
-## Tujuan
-Memindahkan proses *rendering* PDF ke sisi server (*backend*) menggunakan **Puppeteer** atau **Playwright** untuk merender template HTML/CSS khusus (yang mengesankan gaya *glassmorphism*, tata letak presisi, dan elemen visual yang kaya) menjadi sebuah PDF yang siap diunduh oleh *end-user*.
+## Konsep Baru: 2 Kategori CV
 
-## Kebutuhan Fitur (Sesuai Referensi Visual)
-1. **Header Profil**:
-   - Area untuk foto profil (*avatar*) di kiri atas.
-   - Nama lengkap dan peran (jabatan) di sebelah kanan foto.
-   - Garis pemisah (*divider*) yang elegan.
-2. **Summary**:
-   - Teks ringkasan profesional.
-   - Tag keahlian (*skills tags*) yang menonjol dan berwarna (misal: "SEO" [hijau], "Data Analysis" [biru muda], "Campaign Management" [biru tua/navy]).
-3. **Work Experience**:
-   - Format *bullet points* dengan indikator titik (dot).
-   - Penyorotan tebal (*bold*) pada nama perusahaan, metrik pencapaian (misal: **45%**, **50%**), dan tahun.
-4. **Skills**:
-   - Daftar keahlian komprehensif di bagian bawah.
-5. **Desain Keseluruhan**:
-   - Efek kartu (*glassmorphism/clean card*) dengan *soft shadow* dan latar belakang minimalis yang mewah.
-   - Tipografi yang sangat rapi dan konsisten (menggunakan font premium yang sudah ada di sistem, seperti Fraunces/Outfit atau sejenisnya).
+### 1. CV Master
+Ini adalah _single source of truth_ atau fondasi profil pengguna.
+- **Definisi**: CV utama yang dibuat pertama kali.
+- **Metode Pengisian**:
+  - Input form manual oleh pengguna.
+  - Ekstraksi (import) otomatis dari profil LinkedIn.
+  - Upload dan ekstraksi teks dari PDF CV yang sudah ada.
+- **Aturan**: Pengguna harus memiliki minimal 1 CV Master sebelum bisa menggunakan fitur AI Generation (CV Optimize).
 
-## Spesifikasi Teknis yang Diusulkan
-- **Backend (Elysia / Node Service)**:
-  - Membuat *endpoint* POST `/api/generate-pdf`.
-  - Menerima payload berupa struktur data resume (JSON) hasil *parsing* AI.
-  - Menggunakan `playwright-core` atau `puppeteer-core` dengan *headless browser*.
-  - Men-generate HTML dinamis (bisa menggunakan *template engine* ringan atau React *Render-to-String*) lalu diubah menjadi PDF via metode `page.pdf()`.
-  - Mengembalikan *buffer* PDF siap *download*.
-- **Frontend**:
-  - Tombol "PDF PREMIUM" menembak *endpoint* backend dengan data CV yang telah direkayasa.
-  - Menampilkan status *loading* / transmisi yang elegan selama proses *render* di server.
+### 2. CV Optimize (Tailored CV)
+Ini adalah CV khusus lamaran kerja yang diracik oleh AI.
+- **Definisi**: CV yang dihasilkan (generated) oleh AI berdasarkan gabungan antara data **CV Master** dan spesifikasi **Pekerjaan Tujuan** (Job Description / Target Role).
+- **Penamaan Dinamis**: Nama CV tidak lagi sekadar "CV Optimized", melainkan nama spesifik yang mencerminkan targetnya, contoh: 
+  - `Frontend Developer - Tokopedia`
+  - `Marketing Manager - Gojek`
+- **Konsep Penggunaan**: Saat ingin menggunakan AI, pengguna hanya perlu memilih "CV Master", memasukkan job desc/perusahaan tujuan, dan AI akan meracik profilnya menjadi CV Optimize.
+
+## Perubahan Alur Kerja (User Flow)
+1. **User Baru / Kosong**: Saat masuk ke halaman Generate, sistem akan mengecek apakah pengguna sudah memiliki CV Master. Jika belum, pengguna akan diarahkan ke halaman "Buat CV Master" (Manual / PDF / LinkedIn).
+2. **User Lama**: Pengguna memilih CV Master yang sudah ada.
+3. **Target Job**: Pengguna memasukkan Posisi Pekerjaan dan Nama Perusahaan tujuan.
+4. **Generate**: AI mengeksekusi optimasi.
+5. **Simpan**: Hasilnya disimpan ke database dengan label "CV Optimize" dan nama file yang dinamis menyesuaikan posisi + perusahaan.
 
 ## Langkah Implementasi (*To-Do*)
-1. Siapkan infrastruktur Chromium (*Puppeteer* / *Playwright*) di *backend* (di dalam *environment* Bun/Elysia).
-2. Rancang template HTML statis murni + Tailwind CSS injeksi (tanpa interaktivitas) untuk template rendering PDF.
-3. Buat implementasi API PDF generator endpoint.
-4. Sambungkan respon payload JSON dari LLM (OpenRouter) langsung dialirkan ke proses rendering HTML-ke-PDF.
-5. Integrasikan tombol *download* di halaman `/generate` frontend.
-
----
-*Catatan: Dokumen ini adalah rancangan arsitektur awal (issue/proposal). Harap ditinjau sebelum memulai instalasi package UI dan Playwright.*
+1. Tambahkan kolom status/kategori (`type`: 'master' | 'optimized') di tabel resume pada database.
+2. Tambahkan kolom `target_position` dan `target_company` pada database resume.
+3. Buat UI baru untuk _onboarding_ pembuatan CV Master (opsi: Manual, LinkedIn, Upload PDF).
+4. Ubah tampilan dan logika di halaman `/generate` agar pengguna memilih CV Master sebagai sumber input, bukan mengisi formulir dari nol lagi.
+5. Sesuaikan prompt AI di backend (`generation_controller.ts`) agar bisa menerima parameter Target Job & Company, serta menghasilkan nama CV yang dinamis.

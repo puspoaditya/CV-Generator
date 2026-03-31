@@ -25,30 +25,38 @@ export const handleGenerateResume = async ({ body, jwt, set, request }: Context 
     return { error: "User not found" };
   }
 
-  if (!user.isPro && user.credits <= 0) {
+  if (!user.is_pro && user.credits <= 0) {
     set.status = 403;
     return { error: "Insufficient credits. Please upgrade to Pro or buy more credits." };
   }
 
-  const { baseResumeId, jobDescription } = body;
-  if (!baseResumeId || !jobDescription) {
+  const { masterResumeId, targetRole, targetCompany, jobDescription } = body;
+  if (!masterResumeId || !jobDescription) {
     set.status = 400;
-    return { error: "Base Resume ID and Job Description are required" };
+    return { error: "Master Resume ID and Job Description are required" };
   }
 
-  const baseResume = await db.query.resumes.findFirst({
-    where: and(eq(resumes.id, baseResumeId), eq(resumes.userId, payload.id)),
+  const masterResume = await db.query.resumes.findFirst({
+    where: and(eq(resumes.id, masterResumeId), eq(resumes.userId, payload.id)),
   });
 
-  if (!baseResume) {
+  if (!masterResume) {
     set.status = 404;
-    return { error: "Base Resume not found" };
+    return { error: "Master Resume not found" };
   }
 
   // AI Generation
   let optimizedContent;
   try {
-    optimizedContent = await generateOptimizedResume(baseResume.content, jobDescription);
+    const aiPrompt = `Optimize this resume for a ${targetRole || 'specific role'} at ${targetCompany || 'this company'}.
+    
+    JOB DESCRIPTION:
+    ${jobDescription}
+    
+    RESUME DATA:
+    ${masterResume.content}`;
+
+    optimizedContent = await generateOptimizedResume(masterResume.content, aiPrompt);
     if (!optimizedContent) throw new Error("AI returned no content");
   } catch (err: any) {
     set.status = 500;
@@ -56,39 +64,40 @@ export const handleGenerateResume = async ({ body, jwt, set, request }: Context 
   }
 
   // Deduct Credits if not Pro
-  if (!user.isPro) {
+  if (!user.is_pro) {
     await db.update(users).set({ credits: user.credits - 1 }).where(eq(users.id, user.id));
   }
 
-  // Extract job info for a better title if possible
-  let customTitle = `Optimized: ${baseResume.title}`;
-  try {
-    const jobLines = jobDescription.split('\n');
-    const pos = jobLines.find((l: string) => l.includes('POSITION:'))?.replace('POSITION:', '').trim();
-    const comp = jobLines.find((l: string) => l.includes('COMPANY:'))?.replace('COMPANY:', '').trim();
-    if (pos && comp) customTitle = `${pos} @ ${comp}`;
-    else if (pos) customTitle = `${pos} Optimized`;
-  } catch (e) {}
+  // Dynamic naming: Target Role - Target Company
+  let customTitle = "CV Optimized";
+  if (targetRole && targetCompany) {
+    customTitle = `${targetRole} - ${targetCompany}`;
+  } else if (targetRole) {
+    customTitle = `${targetRole} Optimized`;
+  }
 
-  // Save to History & New Resume
+  // Save to New Resume as Optimized
   await db.insert(resumes).values({
     userId: payload.id,
     title: customTitle,
     content: optimizedContent,
-    isBase: 0,
+    type: "optimized",
+    masterId: masterResume.id,
+    targetRole: targetRole || null,
+    targetCompany: targetCompany || null,
   });
 
   await db.insert(generationHistory).values({
     userId: payload.id,
     type: "cv",
-    inputData: jobDescription,
+    inputData: `Role: ${targetRole}, Company: ${targetCompany}\n\n${jobDescription}`,
     outputData: optimizedContent,
   });
 
   return {
     message: "Resume optimized successfully",
     content: optimizedContent,
-    remainingCredits: user.isPro ? "Unlimited" : user.credits - 1,
+    remainingCredits: user.is_pro ? "Unlimited" : user.credits - 1,
   };
 };
 
@@ -105,29 +114,29 @@ export const handleGenerateCoverLetter = async ({ body, jwt, set, request }: Con
     return { error: "User not found" };
   }
 
-  if (!user.isPro && user.credits <= 0) {
+  if (!user.is_pro && user.credits <= 0) {
     set.status = 403;
     return { error: "Insufficient credits. Please upgrade to Pro or buy more credits." };
   }
 
-  const { baseResumeId, jobDescription } = body;
-  if (!baseResumeId || !jobDescription) {
+  const { masterResumeId, jobDescription } = body;
+  if (!masterResumeId || !jobDescription) {
     set.status = 400;
-    return { error: "Base Resume ID and Job Description are required" };
+    return { error: "Master Resume ID and Job Description are required" };
   }
 
-  const baseResume = await db.query.resumes.findFirst({
-    where: and(eq(resumes.id, baseResumeId), eq(resumes.userId, payload.id)),
+  const masterResume = await db.query.resumes.findFirst({
+    where: and(eq(resumes.id, masterResumeId), eq(resumes.userId, payload.id)),
   });
 
-  if (!baseResume) {
+  if (!masterResume) {
     set.status = 404;
-    return { error: "Base Resume not found" };
+    return { error: "Master Resume not found" };
   }
 
   let coverLetter;
   try {
-    coverLetter = await generateCoverLetter(baseResume.content, jobDescription);
+    coverLetter = await generateCoverLetter(masterResume.content, jobDescription);
     if (!coverLetter) throw new Error("AI returned no content");
   } catch (err: any) {
     set.status = 500;
@@ -135,7 +144,7 @@ export const handleGenerateCoverLetter = async ({ body, jwt, set, request }: Con
   }
 
   // Deduct Credits if not Pro
-  if (!user.isPro) {
+  if (!user.is_pro) {
     await db.update(users).set({ credits: user.credits - 1 }).where(eq(users.id, user.id));
   }
 
@@ -149,7 +158,7 @@ export const handleGenerateCoverLetter = async ({ body, jwt, set, request }: Con
   return {
     message: "Cover Letter generated successfully",
     content: coverLetter,
-    remainingCredits: user.isPro ? "Unlimited" : user.credits - 1,
+    remainingCredits: user.is_pro ? "Unlimited" : user.credits - 1,
   };
 };
 
@@ -166,29 +175,29 @@ export const handleGenerateInterviewPrep = async ({ body, jwt, set, request }: C
     return { error: "User not found" };
   }
 
-  if (!user.isPro && user.credits <= 0) {
+  if (!user.is_pro && user.credits <= 0) {
     set.status = 403;
     return { error: "Insufficient credits. Please upgrade to Pro or buy more credits." };
   }
 
-  const { baseResumeId, jobDescription } = body;
-  if (!baseResumeId || !jobDescription) {
+  const { masterResumeId, jobDescription } = body;
+  if (!masterResumeId || !jobDescription) {
     set.status = 400;
-    return { error: "Base Resume ID and Job Description are required" };
+    return { error: "Master Resume ID and Job Description are required" };
   }
 
-  const baseResume = await db.query.resumes.findFirst({
-    where: and(eq(resumes.id, baseResumeId), eq(resumes.userId, payload.id)),
+  const masterResume = await db.query.resumes.findFirst({
+    where: and(eq(resumes.id, masterResumeId), eq(resumes.userId, payload.id)),
   });
 
-  if (!baseResume) {
+  if (!masterResume) {
     set.status = 404;
-    return { error: "Base Resume not found" };
+    return { error: "Master Resume not found" };
   }
 
   let interviewPrep;
   try {
-    interviewPrep = await generateInterviewQuestions(baseResume.content, jobDescription);
+    interviewPrep = await generateInterviewQuestions(masterResume.content, jobDescription);
     if (!interviewPrep) throw new Error("AI returned no content");
   } catch (err: any) {
     set.status = 500;
@@ -196,7 +205,7 @@ export const handleGenerateInterviewPrep = async ({ body, jwt, set, request }: C
   }
 
   // Deduct Credits if not Pro
-  if (!user.isPro) {
+  if (!user.is_pro) {
     await db.update(users).set({ credits: user.credits - 1 }).where(eq(users.id, user.id));
   }
 
@@ -210,7 +219,7 @@ export const handleGenerateInterviewPrep = async ({ body, jwt, set, request }: C
   return {
     message: "Interview preparation generated successfully",
     content: interviewPrep,
-    remainingCredits: user.isPro ? "Unlimited" : user.credits - 1,
+    remainingCredits: user.is_pro ? "Unlimited" : user.credits - 1,
   };
 };
 

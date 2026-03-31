@@ -26,6 +26,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { initializePaddle, Paddle } from "@paddle/paddle-js";
 
 const FAQItem = ({ question, answer }: { question: string; answer: string }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -56,93 +57,138 @@ const FAQItem = ({ question, answer }: { question: string; answer: string }) => 
 
 export default function Pricing() {
   const router = useRouter();
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState<string | null>(null);
+  const [paddle, setPaddle] = useState<Paddle>();
+  const [currency, setCurrency] = useState<'IDR' | 'USD'>('IDR');
+
+  useEffect(() => {
+    initializePaddle({ 
+      environment: "sandbox", 
+      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || "",
+    }).then((paddleInstance) => {
+      if (paddleInstance) setPaddle(paddleInstance);
+    });
+
+    const token = localStorage.getItem("token");
+    if (token) {
+      apiFetch("/auth/me").then(res => res.json()).then(data => setUser(data));
+    }
+  }, []);
 
   const priceCredits = process.env.NEXT_PUBLIC_PRICE_IDR_CREDITS_10 || "75000";
   const pricePro = process.env.NEXT_PUBLIC_PRICE_IDR_PRO || "250000";
 
   const handleCheckout = async (plan: string) => {
     setLoading(plan);
-    try {
-      const res = await apiFetch("/payments/checkout/midtrans", {
-        method: "POST",
-        body: JSON.stringify({ plan }),
+    
+    if (currency === 'USD') {
+      if (!paddle) return;
+      
+      const priceId = plan === 'pro' 
+        ? process.env.NEXT_PUBLIC_PADDLE_PRICE_ELITE_PRO 
+        : process.env.NEXT_PUBLIC_PADDLE_PRICE_DAYA_GEDOR;
+
+      paddle.Checkout.open({
+        settings: { displayMode: "overlay", theme: "light", locale: "en" },
+        items: [{ priceId: priceId || "", quantity: 1 }],
+        customData: { userId: user?.id?.toString() }
       });
-      const data = await res.json();
-      if (data.token) {
-        const isProd = process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === "true";
-        const snapUrl = isProd 
-          ? "https://app.midtrans.com/snap/snap.js" 
-          : "https://app.sandbox.midtrans.com/snap/snap.js";
-
-        const startPayment = () => {
-          (window as any).snap.pay(data.token, {
-            onSuccess: (result: any) => { router.push("/dashboard?status=success"); },
-            onPending: (result: any) => { alert("Pembayaran tertunda..."); },
-            onError: (result: any) => { alert("Pembayaran gagal!"); },
-            onClose: () => { setLoading(null); }
-          });
-        };
-
-        if (!(window as any).snap) {
-          const script = document.createElement("script");
-          script.src = snapUrl;
-          script.setAttribute("data-client-key", process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "");
-          script.onload = startPayment;
-          document.body.appendChild(script);
-        } else {
-          startPayment();
-        }
-      } else {
-        alert(data.error || "Checkout gagal");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Network error. Silakan coba lagi.");
-    } finally {
       setLoading(null);
+    } else {
+      // IDR via Midtrans
+      try {
+        const res = await apiFetch("/payments/checkout/midtrans", {
+          method: "POST",
+          body: JSON.stringify({ plan }),
+        });
+        const data = await res.json();
+        if (data.token) {
+          const isProd = process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === "true";
+          const snapUrl = isProd 
+            ? "https://app.midtrans.com/snap/snap.js" 
+            : "https://app.sandbox.midtrans.com/snap/snap.js";
+
+          const startPayment = () => {
+            (window as any).snap.pay(data.token, {
+              onSuccess: (result: any) => { router.push("/dashboard?status=success"); },
+              onPending: (result: any) => { alert("Pembayaran tertunda..."); },
+              onError: (result: any) => { alert("Pembayaran gagal!"); },
+              onClose: () => { setLoading(null); }
+            });
+          };
+
+          if (!(window as any).snap) {
+            const script = document.createElement("script");
+            script.src = snapUrl;
+            script.setAttribute("data-client-key", process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "");
+            script.onload = startPayment;
+            document.body.appendChild(script);
+          } else {
+            startPayment();
+          }
+        } else {
+          alert(data.error || "Checkout gagal");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Network error. Silakan coba lagi.");
+      } finally {
+        setLoading(null);
+      }
     }
   };
 
   const plans = [
     {
       id: "free",
-      name: "Starter",
-      description: "Untuk eksplorasi awal karir kamu.",
+      name: currency === 'IDR' ? "Starter" : "Starter",
+      description: currency === 'IDR' ? "Untuk eksplorasi awal karir kamu." : "For early career exploration.",
       price: "0",
-      features: ["1 Base CV", "3 AI Generations", "Ekspor PDF Standard", "Tema Dasar Premium"],
-      button: "Sudah Aktif",
+      features: currency === 'IDR' 
+        ? ["1 Base CV", "3 AI Generations", "Ekspor PDF Standard", "Tema Dasar Premium"]
+        : ["1 Base CV", "3 AI Generations", "Standard PDF Export", "Premium Base Themes"],
+      button: currency === 'IDR' ? "Sudah Aktif" : "Already Active",
       disabled: true,
       popular: false
     },
     {
       id: "credits_10",
-      name: "Daya Gedor",
-      description: "Amunisi tambahan untuk lamaran aktif.",
+      name: currency === 'IDR' ? "Daya Gedor" : "Striking Impact",
+      description: currency === 'IDR' ? "Amunisi tambahan untuk lamaran aktif." : "Extra ammunition for active job search.",
       price: priceCredits,
-      features: ["10 AI Generations", "ATS-Friendly PDFs", "Logika Surat Lamaran", "Email Support 24h"],
-      button: "Beli Amunisi",
+      features: currency === 'IDR' 
+        ? ["10 AI Generations", "ATS-Friendly PDFs", "Logika Surat Lamaran", "Email Support 24h"]
+        : ["10 AI Generations", "ATS-Friendly PDFs", "Cover Letter Logic", "24h Email Support"],
+      button: currency === 'IDR' ? "Beli Amunisi" : "Get Ammunition",
       disabled: false,
       popular: true
     },
     {
       id: "pro",
-      name: "Elite Pro",
-      description: "Kuasai bursa kerja secara mutlak.",
+      name: currency === 'IDR' ? "Elite Pro" : "Elite Pro",
+      description: currency === 'IDR' ? "Kuasai bursa kerja secara mutlak." : "Dominate the job market completely.",
       price: pricePro,
-      period: "Sekali Bayar",
-      features: ["Unlimited Base CVs", "AI Tanpa Batas", "Design Premium Navy", "Persiapan Wawancara AI", "Lifetime Access"],
-      button: "Aktivasi Akses",
+      period: currency === 'IDR' ? "Sekali Bayar" : "One-time Payment",
+      features: currency === 'IDR' 
+        ? ["Unlimited Base CVs", "AI Tanpa Batas", "Design Premium Navy", "Persiapan Wawancara AI", "Lifetime Access"]
+        : ["Unlimited Base CVs", "Unlimited AI", "Premium Navy Design", "AI Interview Prep", "Lifetime Access"],
+      button: currency === 'IDR' ? "Aktivasi Akses" : "Activate Access",
       disabled: false,
       popular: false
     }
   ];
 
-  const faqs = [
+  const faqs = currency === 'IDR' ? [
     { question: "Bagaimana sistem kredit bekerja?", answer: "Satu kredit digunakan untuk satu kali pembuatan (generation) CV, Surat Lamaran, atau Persiapan Wawancara. Kredit tidak akan kadaluwarsa selama akun Anda aktif." },
     { question: "Metode pembayaran apa saja yang tersedia?", answer: "Kami mendukung QRIS (OVO, GoPay, ShopeePay), Transfer Bank (Virtual Account), dan Kartu Kredit melalui gateway Midtrans yang aman." },
     { question: "Apakah ada biaya bulanan?", answer: "Tidak. CVCraft menggunakan sistem sekali bayar atau top-up kredit. Tidak ada biaya berlangganan tersembunyi." },
     { question: "Bisa saya refund jika tidak puas?", answer: "Tentu. Kami memberikan garansi uang kembali 100% dalam 7 hari jika Anda belum menggunakan lebih dari 2 kredit dan merasa layanan kami tidak membantu." }
+  ] : [
+    { question: "How does the credit system work?", answer: "One credit is used for one AI generation of a CV, Cover Letter, or Interview Prep. Credits do not expire as long as your account is active." },
+    { question: "What payment methods are available?", answer: "We support Credit Cards, PayPal, and local transfers through Paddle (Global) and Midtrans (Indonesia)." },
+    { question: "Is there a monthly fee?", answer: "No. CVCraft uses a one-time payment or credit top-up system. There are no hidden subscription fees." },
+    { question: "Can I get a refund?", answer: "Yes. We offer a 100% money-back guarantee within 7 days if you've used fewer than 2 credits and find our service unhelpful." }
   ];
 
   return (
@@ -161,13 +207,35 @@ export default function Pricing() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 pt-40 pb-32">
-        <header className="text-center mb-24 relative">
+        <header className="text-center mb-16 relative">
            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <h2 className="text-brand-accent text-[10px] font-bold uppercase tracking-[0.4em] mb-4">Pricing Strategy</h2>
               <h1 className="font-serif text-6xl md:text-7xl font-bold text-clay-900 tracking-tight mb-8">
-                Investasi Karir <br /> <span className="italic font-light text-brand-accent">Tanpa Batas.</span>
+                {currency === 'IDR' ? 'Investasi Karir' : 'Unlimited Career'} <br /> <span className="italic font-light text-brand-accent">{currency === 'IDR' ? 'Tanpa Batas.' : 'Investment.'}</span>
               </h1>
-              <p className="text-clay-600 text-xl font-light max-w-2xl mx-auto leading-relaxed">Tingkatkan efisiensi pencarian kerja Anda dengan bantuan kecerdasan buatan tingkat tinggi.</p>
+              <p className="text-clay-600 text-xl font-light max-w-2xl mx-auto leading-relaxed mb-10">
+                {currency === 'IDR' 
+                  ? 'Tingkatkan efisiensi pencarian kerja Anda dengan bantuan kecerdasan buatan tingkat tinggi.'
+                  : 'Boost your job application efficiency with state-of-the-art artificial intelligence.'
+                }
+              </p>
+              
+              <div className="flex justify-center mb-16">
+                 <div className="bg-white/40 backdrop-blur-md p-1.5 rounded-2xl border border-black/5 flex gap-1 shadow-sm">
+                    <button 
+                       onClick={() => setCurrency('IDR')}
+                       className={`px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${currency === 'IDR' ? 'bg-brand-accent text-brand-white shadow-lg' : 'text-clay-500 hover:text-clay-900'}`}
+                    >
+                       Lokalan (IDR)
+                    </button>
+                    <button 
+                       onClick={() => setCurrency('USD')}
+                       className={`px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${currency === 'USD' ? 'bg-brand-accent text-brand-white shadow-lg' : 'text-clay-500 hover:text-clay-900'}`}
+                    >
+                       Global (USD)
+                    </button>
+                 </div>
+              </div>
            </motion.div>
         </header>
 
@@ -200,8 +268,13 @@ export default function Pricing() {
   
                   <div className="mb-12">
                      <div className="flex items-baseline gap-2">
-                        <span className={`text-[1rem] font-bold uppercase tracking-widest ${isElite ? 'text-brand-white/40' : 'text-clay-400'}`}>IDR</span>
-                        <span className={`text-6xl font-bold font-serif tracking-tighter ${isElite ? 'text-brand-white' : 'text-clay-900'}`}>{Number(p.price).toLocaleString('id-ID')}</span>
+                        <span className={`text-[1rem] font-bold uppercase tracking-widest ${isElite ? 'text-brand-white/40' : 'text-clay-400'}`}>{currency}</span>
+                        <span className={`text-6xl font-bold font-serif tracking-tighter ${isElite ? 'text-brand-white' : 'text-clay-900'}`}>
+                          {currency === 'IDR' 
+                            ? Number(p.price).toLocaleString('id-ID')
+                            : p.id === 'free' ? '0' : (p.id === 'pro' ? (process.env.NEXT_PUBLIC_PRICE_USD_PRO || '19') : (process.env.NEXT_PUBLIC_PRICE_USD_CREDITS_10 || '5'))
+                          }
+                        </span>
                      </div>
                      {p.period && <p className={`text-[10px] font-bold uppercase tracking-widest mt-2 ${isElite ? 'text-brand-gold' : 'text-brand-accent'}`}>{p.period}</p>}
                   </div>
@@ -244,9 +317,9 @@ export default function Pricing() {
                 <table className="w-full text-left border-collapse min-w-[600px]">
                    <thead>
                       <tr className="border-b border-black/5 bg-white/20">
-                         <th className="p-8 text-[10px] font-bold uppercase tracking-widest text-clay-500">Fitur & Layanan</th>
+                         <th className="p-8 text-[10px] font-bold uppercase tracking-widest text-clay-500">{currency === 'IDR' ? 'Fitur & Layanan' : 'Features & Services'}</th>
                          <th className="p-8 text-center text-sm font-bold text-clay-900 italic">Starter</th>
-                         <th className="p-8 text-center text-sm font-bold text-brand-accent">Amunisi</th>
+                         <th className="p-8 text-center text-sm font-bold text-brand-accent">{currency === 'IDR' ? 'Amunisi' : 'Impact'}</th>
                          <th className="p-8 text-center text-sm font-bold text-brand-gold uppercase italic">Elite Pro</th>
                       </tr>
                    </thead>

@@ -131,3 +131,46 @@ export const getMe = async ({ jwt, set, request }: Context & { jwt: any }) => {
         isPro: user.isPro,
     };
 };
+export const googleAuth = async ({ body, jwt, set }: Context & { body: any; jwt: any }) => {
+  const { email, name, image } = body;
+
+  if (!email || !name) {
+    set.status = 400;
+    return { error: "Missing email or name from Google" };
+  }
+
+  // Find user by email
+  let user = await db.query.users.findFirst({
+    where: eq(users.email, email),
+  });
+
+  // If user doesn't exist, create one
+  if (!user) {
+    const [newUser] = await db.insert(users).values({
+      name,
+      email,
+      password: "GOOGLE_AUTH_USER", // Dummy password
+      tier: "free",
+    }).returning();
+    user = newUser;
+  }
+
+  // Generate our internal JWT token
+  const token = await (jwt as any).sign({
+    id: user.id,
+    email: user.email,
+  });
+
+  return {
+    message: "Google Login successful",
+    token,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      tier: user.tier,
+      credits: user.credits,
+      isPro: user.isPro,
+    },
+  };
+};

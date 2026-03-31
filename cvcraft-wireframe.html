@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CVCraft — Wireframe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1a18;
+  --ink2: #4a4a46;
+  --ink3: #9a9a94;
+  --paper: #faf9f6;
+  --paper2: #f2f1ec;
+  --paper3: #e8e7e0;
+  --accent: #2d5a3d;
+  --accent2: #4a8c60;
+  --accent-light: #e8f2ec;
+  --amber: #c4860a;
+  --amber-light: #fef3dc;
+  --danger: #b93a2a;
+  --danger-light: #fdecea;
+  --border: rgba(26,26,24,0.1);
+  --border2: rgba(26,26,24,0.06);
+  --radius: 10px;
+  --radius-lg: 16px;
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ── NAV BAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--paper);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 28px; height: 52px;
+}
+.topbar-logo {
+  font-family: var(--font-display);
+  font-size: 20px; color: var(--ink);
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer;
+}
+.logo-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: inline-block; margin-bottom: 2px; }
+.nav-tabs { display: flex; gap: 2px; }
+.nav-tab {
+  padding: 5px 14px; border-radius: 6px; font-size: 13px; font-weight: 400;
+  color: var(--ink2); cursor: pointer; border: none; background: transparent;
+  transition: all .15s;
+}
+.nav-tab:hover { background: var(--paper2); color: var(--ink); }
+.nav-tab.active { background: var(--ink); color: var(--paper); font-weight: 500; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all .15s; font-family: var(--font-body); }
+.btn-ghost { background: transparent; color: var(--ink2); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--paper2); color: var(--ink); }
+.btn-primary { background: var(--ink); color: var(--paper); }
+.btn-primary:hover { background: #2e2e2a; }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-accent:hover { background: var(--accent2); }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+
+/* ── SCREEN WRAPPER ── */
+.screen { display: none; animation: fadeIn .2s ease; }
+.screen.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ─────────────────────────────────────
+   SCREEN 1 — LANDING PAGE
+───────────────────────────────────── */
+.landing { max-width: 100%; }
+
+.hero {
+  padding: 80px 28px 72px;
+  max-width: 860px; margin: 0 auto;
+  text-align: center;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent-light); color: var(--accent);
+  font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: 999px;
+  margin-bottom: 24px; letter-spacing: .03em;
+}
+.hero-eyebrow-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: 56px; line-height: 1.12; letter-spacing: -.02em;
+  color: var(--ink); margin-bottom: 20px;
+}
+.hero h1 em { font-style: italic; color: var(--accent); }
+.hero-sub {
+  font-size: 17px; color: var(--ink2); line-height: 1.65;
+  max-width: 520px; margin: 0 auto 36px;
+}
+.hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-lg { padding: 12px 28px; font-size: 15px; border-radius: 9px; }
+
+.hero-demo {
+  max-width: 780px; margin: 56px auto 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--paper2);
+  overflow: hidden;
+}
+.demo-bar {
+  background: var(--paper3); padding: 9px 16px;
+  display: flex; align-items: center; gap: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.demo-dot { width: 9px; height: 9px; border-radius: 50%; }
+.demo-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 0; min-height: 280px; }
+.demo-left { padding: 20px; border-right: 1px solid var(--border); }
+.demo-right { padding: 20px; }
+.demo-label { font-size: 10px; font-weight: 500; letter-spacing: .07em; color: var(--ink3); margin-bottom: 10px; text-transform: uppercase; }
+.demo-jd {
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 7px; padding: 12px;
+  font-size: 11px; color: var(--ink2); line-height: 1.7;
+}
+.demo-jd strong { color: var(--ink); font-weight: 500; }
+.kw-chip {
+  display: inline-block; background: var(--amber-light); color: var(--amber);
+  font-size: 10px; font-weight: 500; padding: 1px 7px; border-radius: 4px; margin: 1px;
+}
+.kw-chip.match { background: var(--accent-light); color: var(--accent); }
+.demo-cv { font-size: 11px; color: var(--ink2); line-height: 1.75; }
+.demo-cv .cv-name { font-family: var(--font-display); font-size: 16px; color: var(--ink); margin-bottom: 2px; }
+.demo-cv .cv-title { font-size: 11px; color: var(--ink2); margin-bottom: 10px; }
+.demo-cv .cv-section { font-size: 10px; font-weight: 500; letter-spacing: .06em; color: var(--ink3); margin: 8px 0 4px; text-transform: uppercase; }
+.highlight-text { background: #d4edda; border-radius: 2px; padding: 0 2px; }
+.score-bar { margin-top: 14px; }
+.score-label { font-size: 10px; color: var(--ink3); display: flex; justify-content: space-between; margin-bottom: 4px; }
+.score-track { height: 5px; background: var(--paper3); border-radius: 3px; overflow: hidden; }
+.score-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+
+.features-strip {
+  background: var(--ink); color: var(--paper);
+  padding: 56px 28px;
+}
+.features-inner { max-width: 860px; margin: 0 auto; }
+.features-h { font-family: var(--font-display); font-size: 36px; margin-bottom: 8px; }
+.features-sub { font-size: 14px; color: rgba(250,249,246,.55); margin-bottom: 40px; }
+.features-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: rgba(255,255,255,.08); border-radius: var(--radius); overflow: hidden; }
+.feat-cell { background: var(--ink); padding: 24px; }
+.feat-icon-wrap { width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,.07); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+.feat-icon-wrap svg { width: 18px; height: 18px; stroke: rgba(250,249,246,.7); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.feat-cell h3 { font-size: 14px; font-weight: 500; margin-bottom: 6px; color: var(--paper); }
+.feat-cell p { font-size: 12px; color: rgba(250,249,246,.5); line-height: 1.65; }
+
+.how-section { padding: 72px 28px; max-width: 860px; margin: 0 auto; }
+.how-h { font-family: var(--font-display); font-size: 36px; margin-bottom: 8px; text-align: center; }
+.how-sub { font-size: 14px; color: var(--ink2); text-align: center; margin-bottom: 44px; }
+.steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+.step { text-align: center; }
+.step-num { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-light); color: var(--accent); font-weight: 500; font-size: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
+.step h4 { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+.step p { font-size: 11px; color: var(--ink2); line-height: 1.65; }
+
+.cta-strip { background: var(--accent-light); padding: 56px 28px; text-align: center; }
+.cta-h { font-family: var(--font-display); font-size: 34px; margin-bottom: 10px; color: var(--accent); }
+.cta-sub { font-size: 14px; color: var(--ink2); margin-bottom: 28px; }
+
+/* ─────────────────────────────────────
+   SCREEN 2 — DASHBOARD
+───────────────────────────────────── */
+.app-layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 52px); }
+.sidebar {
+  background: var(--paper2); border-right: 1px solid var(--border);
+  padding: 20px 14px;
+}
+.sidebar-section { margin-bottom: 24px; }
+.sidebar-label { font-size: 10px; font-weight: 500; letter-spacing: .07em; color: var(--ink3); text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; }
+.sidebar-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 8px; border-radius: 7px;
+  font-size: 13px; color: var(--ink2); cursor: pointer;
+  transition: all .12s;
+}
+.sidebar-item:hover { background: var(--paper3); color: var(--ink); }
+.sidebar-item.active { background: var(--ink); color: var(--paper); }
+.sidebar-item svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.sidebar-badge { margin-left: auto; background: var(--accent); color: #fff; font-size: 10px; font-weight: 500; padding: 1px 6px; border-radius: 999px; }
+.sidebar-avatar { display: flex; align-items: center; gap: 8px; padding: 8px; border-top: 1px solid var(--border); margin-top: 8px; padding-top: 16px; }
+.avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.avatar-info p { font-size: 12px; font-weight: 500; color: var(--ink); }
+.avatar-info span { font-size: 10px; color: var(--ink3); }
+
+.main-content { padding: 28px 32px; overflow-y: auto; background: var(--paper); }
+.page-title { font-family: var(--font-display); font-size: 26px; margin-bottom: 4px; }
+.page-sub { font-size: 13px; color: var(--ink2); margin-bottom: 28px; }
+
+.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 28px; }
+.stat-card { background: var(--paper2); border-radius: var(--radius); padding: 16px 18px; }
+.stat-label { font-size: 11px; color: var(--ink3); margin-bottom: 6px; font-weight: 500; }
+.stat-val { font-size: 26px; font-weight: 400; font-family: var(--font-display); color: var(--ink); }
+.stat-val span { font-size: 13px; color: var(--ink3); font-family: var(--font-body); }
+
+.section-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.section-row h2 { font-size: 15px; font-weight: 500; }
+
+.cv-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 28px; }
+.cv-card {
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  background: #fff; overflow: hidden; cursor: pointer;
+  transition: border-color .15s;
+}
+.cv-card:hover { border-color: var(--border2); box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+.cv-card-thumb {
+  height: 130px; background: var(--paper2);
+  display: flex; align-items: center; justify-content: center;
+  border-bottom: 1px solid var(--border2); position: relative;
+  overflow: hidden;
+}
+.cv-thumb-preview { width: 72px; background: #fff; border-radius: 3px; padding: 7px; border: 0.5px solid var(--border); }
+.cv-thumb-line { height: 4px; border-radius: 2px; margin-bottom: 3px; }
+.cv-thumb-line.dark { background: var(--ink); width: 60%; }
+.cv-thumb-line.mid { background: var(--paper3); width: 80%; }
+.cv-thumb-line.short { background: var(--paper3); width: 50%; }
+.cv-thumb-line.accent { background: var(--accent); width: 30%; }
+.cv-tag {
+  position: absolute; top: 8px; right: 8px;
+  font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 999px;
+}
+.cv-tag.tailored { background: var(--accent-light); color: var(--accent); }
+.cv-tag.master { background: var(--paper3); color: var(--ink2); }
+.cv-card-body { padding: 12px 14px; }
+.cv-card-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+.cv-card-sub { font-size: 11px; color: var(--ink2); margin-bottom: 10px; }
+.cv-card-meta { display: flex; align-items: center; justify-content: space-between; }
+.match-pill {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 500;
+}
+.match-dot { width: 6px; height: 6px; border-radius: 50%; }
+.match-dot.high { background: var(--accent); }
+.match-dot.mid { background: var(--amber); }
+.cv-date { font-size: 10px; color: var(--ink3); }
+
+.add-cv-card {
+  border: 1.5px dashed var(--border); border-radius: var(--radius-lg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; min-height: 220px; cursor: pointer; color: var(--ink3);
+  transition: all .15s;
+}
+.add-cv-card:hover { background: var(--paper2); color: var(--ink2); border-color: var(--border2); }
+.add-icon { width: 32px; height: 32px; border-radius: 50%; background: var(--paper3); display: flex; align-items: center; justify-content: center; }
+.add-icon svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; }
+
+.activity-list { display: flex; flex-direction: column; gap: 8px; }
+.activity-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; background: #fff;
+  border: 1px solid var(--border2); border-radius: var(--radius);
+}
+.activity-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.activity-icon svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.ai-bg { background: var(--accent-light); color: var(--accent); }
+.dl-bg { background: var(--amber-light); color: var(--amber); }
+.ed-bg { background: var(--paper3); color: var(--ink2); }
+.activity-text { flex: 1; font-size: 12px; color: var(--ink); }
+.activity-text span { color: var(--ink2); }
+.activity-time { font-size: 11px; color: var(--ink3); }
+
+/* ─────────────────────────────────────
+   SCREEN 3 — CV BUILDER
+───────────────────────────────────── */
+.builder-layout { display: grid; grid-template-columns: 320px 1fr; min-height: calc(100vh - 52px); }
+.builder-form { background: var(--paper2); border-right: 1px solid var(--border); overflow-y: auto; }
+.builder-form-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
+.builder-form-header h2 { font-size: 15px; font-weight: 500; }
+.builder-form-header p { font-size: 12px; color: var(--ink2); margin-top: 2px; }
+.form-sections { padding: 16px 20px; }
+.form-section { margin-bottom: 20px; }
+.form-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px; border-radius: 7px; cursor: pointer;
+  background: var(--paper3); margin-bottom: 10px;
+}
+.form-section-header span { font-size: 12px; font-weight: 500; color: var(--ink); display: flex; align-items: center; gap: 7px; }
+.form-section-header svg { width: 13px; height: 13px; stroke: var(--ink2); fill: none; stroke-width: 1.5; stroke-linecap: round; }
+.form-section-header .chev { width: 13px; height: 13px; stroke: var(--ink3); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.field { margin-bottom: 10px; }
+.field label { display: block; font-size: 11px; font-weight: 500; color: var(--ink2); margin-bottom: 4px; }
+.field input, .field textarea, .field select {
+  width: 100%; padding: 8px 10px; font-size: 12px; font-family: var(--font-body);
+  background: #fff; border: 1px solid var(--border); border-radius: 6px; color: var(--ink);
+  outline: none; resize: none;
+}
+.field input:focus, .field textarea:focus { border-color: var(--accent); }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.exp-entry { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+.exp-entry-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.exp-title { font-size: 12px; font-weight: 500; color: var(--ink); }
+.exp-sub { font-size: 11px; color: var(--ink2); margin-top: 1px; }
+.exp-dots { display: flex; gap: 4px; }
+.exp-dot { width: 16px; height: 16px; border-radius: 4px; background: var(--paper3); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.exp-dot svg { width: 9px; height: 9px; stroke: var(--ink3); fill: none; stroke-width: 1.5; stroke-linecap: round; }
+.add-entry-btn { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--accent); cursor: pointer; padding: 5px 0; }
+.add-entry-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; }
+
+.builder-preview { background: var(--paper); overflow-y: auto; }
+.preview-toolbar {
+  padding: 12px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: #fff;
+}
+.preview-toolbar-left { display: flex; align-items: center; gap: 8px; }
+.template-thumb { width: 28px; height: 36px; border-radius: 3px; border: 1.5px solid transparent; cursor: pointer; overflow: hidden; position: relative; }
+.template-thumb.selected { border-color: var(--accent); }
+.template-thumb-inner { width: 100%; height: 100%; }
+.t1 { background: linear-gradient(135deg, var(--ink) 35%, var(--paper) 35%); }
+.t2 { background: linear-gradient(to right, var(--accent) 28%, var(--paper) 28%); }
+.t3 { background: var(--paper); border: 1px solid var(--border); }
+
+.cv-preview-page {
+  max-width: 540px; margin: 24px auto; background: #fff;
+  border: 1px solid var(--border); border-radius: 6px; padding: 36px 40px;
+  min-height: 700px;
+}
+.cv-p-name { font-family: var(--font-display); font-size: 28px; color: var(--ink); margin-bottom: 2px; }
+.cv-p-title { font-size: 13px; color: var(--accent); font-weight: 500; margin-bottom: 4px; }
+.cv-p-contact { font-size: 11px; color: var(--ink2); margin-bottom: 18px; }
+.cv-p-divider { height: 1px; background: var(--paper3); margin-bottom: 16px; }
+.cv-p-section { font-size: 10px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+.cv-p-exp-title { font-size: 13px; font-weight: 500; color: var(--ink); }
+.cv-p-exp-co { font-size: 12px; color: var(--ink2); margin-bottom: 5px; display: flex; justify-content: space-between; }
+.cv-p-exp-co span { font-size: 11px; color: var(--ink3); }
+.cv-p-bullet { font-size: 12px; color: var(--ink2); line-height: 1.65; padding-left: 12px; position: relative; margin-bottom: 2px; }
+.cv-p-bullet::before { content: '·'; position: absolute; left: 0; color: var(--accent); }
+.cv-p-skills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 16px; }
+.skill-chip { font-size: 11px; padding: 3px 9px; border-radius: 4px; background: var(--paper2); color: var(--ink2); border: 1px solid var(--border); }
+
+/* ─────────────────────────────────────
+   SCREEN 4 — CV TAILOR
+───────────────────────────────────── */
+.tailor-layout { padding: 28px 32px; background: var(--paper); }
+.tailor-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; }
+.tailor-header-left h1 { font-family: var(--font-display); font-size: 26px; margin-bottom: 4px; }
+.tailor-header-left p { font-size: 13px; color: var(--ink2); }
+.tailor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.tailor-panel { border: 1px solid var(--border); border-radius: var(--radius-lg); background: #fff; overflow: hidden; }
+.panel-header {
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.panel-title { font-size: 13px; font-weight: 500; }
+.panel-title-row { display: flex; align-items: center; gap: 8px; }
+.panel-badge { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 999px; }
+.panel-badge.jd { background: var(--amber-light); color: var(--amber); }
+.panel-badge.ai { background: var(--accent-light); color: var(--accent); }
+.panel-body { padding: 16px; }
+
+.jd-textarea {
+  width: 100%; min-height: 260px; padding: 12px; font-size: 12px;
+  font-family: var(--font-body); color: var(--ink2); line-height: 1.75;
+  border: 1px solid var(--border); border-radius: 7px; resize: vertical;
+  background: var(--paper2); outline: none;
+}
+.jd-textarea:focus { border-color: var(--accent); background: #fff; }
+.kw-extract { margin-top: 12px; }
+.kw-extract-label { font-size: 11px; color: var(--ink3); margin-bottom: 6px; }
+.kw-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.kw { font-size: 11px; padding: 3px 9px; border-radius: 5px; font-weight: 500; }
+.kw.found { background: var(--accent-light); color: var(--accent); }
+.kw.missing { background: var(--danger-light); color: var(--danger); }
+.kw.partial { background: var(--amber-light); color: var(--amber); }
+
+.tailor-result { padding: 0; }
+.result-section { padding: 14px 16px; border-bottom: 1px solid var(--border2); }
+.result-section:last-child { border-bottom: none; }
+.result-label { font-size: 10px; font-weight: 500; letter-spacing: .07em; text-transform: uppercase; color: var(--ink3); margin-bottom: 8px; }
+.diff-line { font-size: 12px; line-height: 1.7; margin-bottom: 4px; }
+.diff-removed { text-decoration: line-through; color: var(--danger); background: var(--danger-light); border-radius: 2px; padding: 0 2px; }
+.diff-added { color: var(--accent); background: var(--accent-light); border-radius: 2px; padding: 0 2px; font-weight: 500; }
+.diff-neutral { color: var(--ink2); }
+
+.score-panel { border: 1px solid var(--border); border-radius: var(--radius-lg); background: #fff; padding: 20px 24px; }
+.score-main { display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center; }
+.score-circle {
+  width: 88px; height: 88px; border-radius: 50%;
+  background: conic-gradient(var(--accent) 0% 82%, var(--paper3) 82% 100%);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.score-circle-inner {
+  width: 70px; height: 70px; border-radius: 50%; background: #fff;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.score-num { font-family: var(--font-display); font-size: 22px; color: var(--ink); line-height: 1; }
+.score-pct { font-size: 10px; color: var(--ink3); }
+.score-breakdown { display: flex; flex-direction: column; gap: 8px; }
+.score-row { display: flex; flex-direction: column; gap: 3px; }
+.score-row-label { font-size: 11px; color: var(--ink2); display: flex; justify-content: space-between; }
+.score-row-label span { font-weight: 500; color: var(--ink); }
+.score-track2 { height: 4px; background: var(--paper3); border-radius: 2px; overflow: hidden; }
+.score-fill2 { height: 100%; border-radius: 2px; }
+.score-fill2.g { background: var(--accent); }
+.score-fill2.a { background: var(--amber); }
+.score-fill2.r { background: var(--danger); }
+.action-bar { margin-top: 16px; display: flex; gap: 8px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+/* page indicator */
+.page-indicator {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: var(--paper); border-radius: 999px;
+  padding: 8px 16px; font-size: 12px; display: flex; align-items: center; gap: 10px;
+  z-index: 999;
+}
+.page-dots { display: flex; gap: 5px; }
+.page-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(250,249,246,.3); cursor: pointer; transition: background .15s; }
+.page-dot.active { background: var(--paper); }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo" onclick="goto(0)">
+    <span class="logo-dot"></span>CVCraft
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tab0" onclick="goto(0)">Landing</button>
+    <button class="nav-tab" id="tab1" onclick="goto(1)">Dashboard</button>
+    <button class="nav-tab" id="tab2" onclick="goto(2)">CV Builder</button>
+    <button class="nav-tab" id="tab3" onclick="goto(3)">CV Tailor</button>
+  </div>
+  <div class="topbar-right">
+    <button class="btn btn-ghost btn-sm" onclick="goto(1)">Masuk</button>
+    <button class="btn btn-accent btn-sm" onclick="goto(1)">Coba Gratis</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 0 — LANDING PAGE
+═══════════════════════════════════════ -->
+<div class="screen active" id="screen0">
+<div class="landing">
+
+  <div class="hero">
+    <div class="hero-eyebrow"><span class="hero-eyebrow-dot"></span> CV Adapter #1 untuk Pasar Indonesia</div>
+    <h1>Satu CV, <em>ratusan</em><br>lamaran yang pas</h1>
+    <p class="hero-sub">Paste job description, CVCraft otomatis menyesuaikan CV kamu — keyword, urutan, dan framing — tanpa kamu harus edit manual satu per satu.</p>
+    <div class="hero-cta">
+      <button class="btn btn-primary btn-lg" onclick="goto(1)">Mulai Gratis — Tanpa Kartu Kredit</button>
+      <button class="btn btn-ghost btn-lg" onclick="goto(3)">Lihat Demo Tailor →</button>
+    </div>
+  </div>
+
+  <!-- demo window -->
+  <div style="max-width:780px;margin:0 auto 60px;padding:0 28px;">
+    <div class="hero-demo">
+      <div class="demo-bar">
+        <div class="demo-dot" style="background:#e74c3c"></div>
+        <div class="demo-dot" style="background:#f39c12"></div>
+        <div class="demo-dot" style="background:#2ecc71"></div>
+        <span style="font-size:11px;color:var(--ink3);margin-left:8px;">cvcraft.id — CV Tailor</span>
+      </div>
+      <div class="demo-inner">
+        <div class="demo-left">
+          <div class="demo-label">Job description</div>
+          <div class="demo-jd">
+            <strong>Product Manager — GoPay</strong><br><br>
+            Kami mencari PM yang berpengalaman dalam <span class="kw-chip">product strategy</span>, <span class="kw-chip match">data analysis</span>, dan <span class="kw-chip">agile sprint</span>.<br><br>
+            Kualifikasi: <span class="kw-chip match">SQL</span>, pengalaman <span class="kw-chip">fintech</span> min. 2 tahun, <span class="kw-chip">stakeholder management</span>.
+            <div class="score-bar" style="margin-top:14px">
+              <div class="score-label"><span>Keyword match</span><span>82%</span></div>
+              <div class="score-track"><div class="score-fill" style="width:82%"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="demo-right">
+          <div class="demo-label">CV setelah diadaptasi</div>
+          <div class="demo-cv">
+            <div class="cv-name">Andi Pratama</div>
+            <div class="cv-title">Product Manager · ex-Tokopedia</div>
+            <div class="cv-section">Pengalaman</div>
+            <div style="font-size:12px;font-weight:500;color:var(--ink)">Senior PM · Tokopedia</div>
+            <div style="font-size:11px;color:var(--ink3);margin-bottom:5px">2021–2024</div>
+            <div style="font-size:11px;color:var(--ink2);line-height:1.7">
+              · Led <span class="highlight-text">product strategy</span> for Tokopedia Pay,<br>
+              · Dikelola <span class="highlight-text">agile sprint</span> tim 8 orang<br>
+              · Analisis via <span class="highlight-text">SQL</span> & <span class="highlight-text">data analysis</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- features -->
+  <div class="features-strip">
+    <div class="features-inner">
+      <div class="features-h">Semua yang kamu butuh<br>untuk melamar lebih cerdas</div>
+      <div class="features-sub">Dari satu master CV, hingga ratusan versi yang ter-tailor otomatis.</div>
+      <div class="features-grid">
+        <div class="feat-cell">
+          <div class="feat-icon-wrap">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          </div>
+          <h3>Smart CV Tailor</h3>
+          <p>AI membaca JD, extract keyword penting, lalu rewrite bullet point CV kamu agar lebih relevan — tanpa mengubah fakta.</p>
+        </div>
+        <div class="feat-cell">
+          <div class="feat-icon-wrap">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          </div>
+          <h3>Version Manager</h3>
+          <p>Setiap CV yang di-tailor tersimpan otomatis. Bisa dibuka lagi, diedit, atau kirim ulang kapan saja.</p>
+        </div>
+        <div class="feat-cell">
+          <div class="feat-icon-wrap">
+            <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+          </div>
+          <h3>Match Score</h3>
+          <p>Skor % kesesuaian CV vs JD. Lihat mana keyword yang sudah match, kurang, atau perlu ditambah.</p>
+        </div>
+        <div class="feat-cell">
+          <div class="feat-icon-wrap">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          </div>
+          <h3>Cover Letter AI</h3>
+          <p>Generate cover letter yang disesuaikan dengan JD dan gaya penulisanmu. Edit bebas sebelum kirim.</p>
+        </div>
+        <div class="feat-cell">
+          <div class="feat-icon-wrap">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </div>
+          <h3>40+ Template</h3>
+          <p>Template bersih dan ATS-friendly untuk semua bidang. Pilih satu, pakai selamanya sebagai master.</p>
+        </div>
+        <div class="feat-cell">
+          <div class="feat-icon-wrap">
+            <svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77"/></svg>
+          </div>
+          <h3>Application Tracker</h3>
+          <p>Lacak status setiap lamaran dari Applied → Interview → Offer, linked ke versi CV yang dikirim.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- how it works -->
+  <div class="how-section">
+    <div class="how-h">Tiga langkah. Satu menit.</div>
+    <div class="how-sub">Tidak perlu redesign CV dari nol setiap melamar.</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h4>Buat master CV</h4>
+        <p>Isi semua pengalaman, skill, dan pendidikan kamu sekali saja di editor kami.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h4>Paste job description</h4>
+        <p>Copy JD dari LinkedIn, Jobstreet, atau mana saja. Paste ke CVCraft.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h4>AI tailor-kan CV</h4>
+        <p>Dalam detik, CV kamu diadaptasi otomatis — keyword di-boost, framing disesuaikan.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <h4>Download & kirim</h4>
+        <p>Review hasil adaptasi, download PDF, simpan versi. Tinggal kirim!</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-strip">
+    <div class="cta-h">Mulai gratis sekarang</div>
+    <p class="cta-sub">3 adaptasi gratis per bulan. Tidak perlu kartu kredit.</p>
+    <button class="btn btn-accent btn-lg" onclick="goto(1)">Buat Akun Gratis</button>
+  </div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 1 — DASHBOARD
+═══════════════════════════════════════ -->
+<div class="screen" id="screen1">
+<div class="app-layout">
+
+  <!-- sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Menu</div>
+      <div class="sidebar-item active">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </div>
+      <div class="sidebar-item" onclick="goto(2)">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        CV Builder
+      </div>
+      <div class="sidebar-item" onclick="goto(3)">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        CV Tailor
+        <span class="sidebar-badge">Baru</span>
+      </div>
+      <div class="sidebar-item">
+        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+        Lamaran Saya
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Akun</div>
+      <div class="sidebar-item">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profil
+      </div>
+      <div class="sidebar-item">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 4.93l1.41 1.41"/><path d="M4.93 19.07l1.41-1.41"/><path d="M19.07 19.07l-1.41-1.41"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg>
+        Pengaturan
+      </div>
+    </div>
+    <div class="sidebar-avatar" style="margin-top:auto">
+      <div class="avatar">AP</div>
+      <div class="avatar-info">
+        <p>Andi Pratama</p>
+        <span>Plan Gratis · 1/3 tailor</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- main -->
+  <div class="main-content">
+    <div class="page-title">Dashboard</div>
+    <div class="page-sub">Selamat datang kembali, Andi — kamu punya 2 tailor tersisa bulan ini.</div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total CV</div>
+        <div class="stat-val">4 <span>versi</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Dikirim bulan ini</div>
+        <div class="stat-val">7 <span>lamaran</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg. match score</div>
+        <div class="stat-val">79<span>%</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Interview diterima</div>
+        <div class="stat-val">2 <span>panggilan</span></div>
+      </div>
+    </div>
+
+    <div class="section-row">
+      <h2>CV kamu</h2>
+      <button class="btn btn-ghost btn-sm" onclick="goto(2)">+ Buat CV baru</button>
+    </div>
+
+    <div class="cv-grid">
+      <!-- master CV -->
+      <div class="cv-card" onclick="goto(2)">
+        <div class="cv-card-thumb">
+          <div class="cv-thumb-preview">
+            <div class="cv-thumb-line dark"></div>
+            <div class="cv-thumb-line accent" style="margin-bottom:5px"></div>
+            <div class="cv-thumb-line mid"></div>
+            <div class="cv-thumb-line mid"></div>
+            <div class="cv-thumb-line short"></div>
+            <div class="cv-thumb-line mid" style="margin-top:5px"></div>
+            <div class="cv-thumb-line mid"></div>
+          </div>
+          <span class="cv-tag master">Master CV</span>
+        </div>
+        <div class="cv-card-body">
+          <div class="cv-card-title">CV Master — Andi Pratama</div>
+          <div class="cv-card-sub">Product Manager · Diperbarui 2 hari lalu</div>
+          <div class="cv-card-meta">
+            <span style="font-size:11px;color:var(--ink3)">Sumber semua versi</span>
+            <span class="cv-date">28 Mar 2025</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- tailored 1 -->
+      <div class="cv-card" onclick="goto(3)">
+        <div class="cv-card-thumb" style="background:var(--accent-light)">
+          <div class="cv-thumb-preview">
+            <div class="cv-thumb-line dark"></div>
+            <div class="cv-thumb-line" style="background:var(--accent);width:50%;margin-bottom:5px"></div>
+            <div class="cv-thumb-line mid"></div>
+            <div class="cv-thumb-line mid"></div>
+            <div class="cv-thumb-line short"></div>
+          </div>
+          <span class="cv-tag tailored">Tailored</span>
+        </div>
+        <div class="cv-card-body">
+          <div class="cv-card-title">PM · GoPay</div>
+          <div class="cv-card-sub">Dibuat dari master · 2 jam lalu</div>
+          <div class="cv-card-meta">
+            <div class="match-pill"><div class="match-dot high"></div><span style="font-size:11px;font-weight:500;color:var(--accent)">82% match</span></div>
+            <span class="cv-date">28 Mar</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- tailored 2 -->
+      <div class="cv-card" onclick="goto(3)">
+        <div class="cv-card-thumb" style="background:var(--amber-light)">
+          <div class="cv-thumb-preview">
+            <div class="cv-thumb-line dark"></div>
+            <div class="cv-thumb-line" style="background:var(--amber);width:50%;margin-bottom:5px"></div>
+            <div class="cv-thumb-line mid"></div>
+            <div class="cv-thumb-line mid"></div>
+            <div class="cv-thumb-line short"></div>
+          </div>
+          <span class="cv-tag tailored">Tailored</span>
+        </div>
+        <div class="cv-card-body">
+          <div class="cv-card-title">Senior PM · Traveloka</div>
+          <div class="cv-card-sub">Dibuat dari master · kemarin</div>
+          <div class="cv-card-meta">
+            <div class="match-pill"><div class="match-dot mid"></div><span style="font-size:11px;font-weight:500;color:var(--amber)">71% match</span></div>
+            <span class="cv-date">27 Mar</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- add new -->
+      <div class="add-cv-card" onclick="goto(3)">
+        <div class="add-icon">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span style="font-size:13px;font-weight:500">Tailor CV baru</span>
+        <span style="font-size:11px">Paste JD baru untuk lamaran</span>
+      </div>
+    </div>
+
+    <div class="section-row">
+      <h2>Aktivitas terbaru</h2>
+    </div>
+    <div class="activity-list">
+      <div class="activity-item">
+        <div class="activity-icon ai-bg">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div class="activity-text">CV di-tailor untuk <strong>Product Manager · GoPay</strong> <span>— match score 82%</span></div>
+        <div class="activity-time">2 jam lalu</div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-icon dl-bg">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </div>
+        <div class="activity-text">Download PDF <strong>CV Traveloka</strong> <span>— siap dikirim</span></div>
+        <div class="activity-time">Kemarin</div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-icon ed-bg">
+          <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </div>
+        <div class="activity-text">Edit master CV <span>— menambah pengalaman baru</span></div>
+        <div class="activity-time">2 hari lalu</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 2 — CV BUILDER
+═══════════════════════════════════════ -->
+<div class="screen" id="screen2">
+<div class="app-layout">
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Menu</div>
+      <div class="sidebar-item" onclick="goto(1)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </div>
+      <div class="sidebar-item active">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        CV Builder
+      </div>
+      <div class="sidebar-item" onclick="goto(3)">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        CV Tailor
+      </div>
+    </div>
+    <div class="sidebar-avatar" style="margin-top:16px">
+      <div class="avatar">AP</div>
+      <div class="avatar-info"><p>Andi Pratama</p><span>Master CV</span></div>
+    </div>
+  </div>
+
+  <div class="builder-layout" style="display:grid;grid-template-columns:320px 1fr;min-height:calc(100vh - 52px);grid-column:1/3">
+    <!-- form panel -->
+    <div class="builder-form">
+      <div class="builder-form-header">
+        <h2>Edit Master CV</h2>
+        <p>Data ini jadi sumber semua CV yang di-tailor</p>
+      </div>
+      <div class="form-sections">
+
+        <div class="form-section">
+          <div class="form-section-header">
+            <span>
+              <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--ink2);fill:none;stroke-width:1.5;stroke-linecap:round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Informasi dasar
+            </span>
+            <svg class="chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="field"><label>Nama lengkap</label><input value="Andi Pratama"></div>
+          <div class="field"><label>Jabatan / posisi saat ini</label><input value="Product Manager"></div>
+          <div class="field-row">
+            <div class="field"><label>Email</label><input value="andi@email.com"></div>
+            <div class="field"><label>No. HP</label><input value="+62 812-xxxx"></div>
+          </div>
+          <div class="field"><label>LinkedIn URL</label><input value="linkedin.com/in/andipratama"></div>
+          <div class="field"><label>Ringkasan profil</label><textarea rows="3">Product Manager dengan 4 tahun pengalaman di industri e-commerce dan fintech. Fokus pada growth product dan data-driven decision making.</textarea></div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-header">
+            <span>
+              <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--ink2);fill:none;stroke-width:1.5;stroke-linecap:round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+              Pengalaman kerja
+            </span>
+            <svg class="chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="exp-entry">
+            <div class="exp-entry-header">
+              <div>
+                <div class="exp-title">Senior Product Manager</div>
+                <div class="exp-sub">Tokopedia · 2021–2024</div>
+              </div>
+              <div class="exp-dots">
+                <div class="exp-dot"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+                <div class="exp-dot"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></div>
+              </div>
+            </div>
+          </div>
+          <div class="exp-entry">
+            <div class="exp-entry-header">
+              <div>
+                <div class="exp-title">Product Analyst</div>
+                <div class="exp-sub">Bukalapak · 2019–2021</div>
+              </div>
+              <div class="exp-dots">
+                <div class="exp-dot"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+                <div class="exp-dot"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></div>
+              </div>
+            </div>
+          </div>
+          <div class="add-entry-btn">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Tambah pengalaman
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-header">
+            <span>
+              <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--ink2);fill:none;stroke-width:1.5;stroke-linecap:round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+              Skills
+            </span>
+            <svg class="chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
+            <span class="skill-chip" style="cursor:pointer">Product Strategy ×</span>
+            <span class="skill-chip" style="cursor:pointer">SQL ×</span>
+            <span class="skill-chip" style="cursor:pointer">Data Analysis ×</span>
+            <span class="skill-chip" style="cursor:pointer">Agile ×</span>
+            <span class="skill-chip" style="cursor:pointer">Figma ×</span>
+            <span class="skill-chip" style="cursor:pointer">Stakeholder Mgmt ×</span>
+          </div>
+          <input placeholder="+ Tambah skill..." style="width:100%;padding:7px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font-body);outline:none">
+        </div>
+
+        <div style="display:flex;gap:8px;padding-bottom:20px">
+          <button class="btn btn-accent" style="flex:1" onclick="goto(3)">Tailor CV ini →</button>
+          <button class="btn btn-ghost">Simpan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- preview panel -->
+    <div class="builder-preview">
+      <div class="preview-toolbar">
+        <div class="preview-toolbar-left">
+          <span style="font-size:12px;color:var(--ink3);margin-right:6px">Template:</span>
+          <div class="template-thumb selected"><div class="template-thumb-inner t1"></div></div>
+          <div class="template-thumb"><div class="template-thumb-inner t2"></div></div>
+          <div class="template-thumb"><div class="template-thumb-inner t3"></div></div>
+          <span style="font-size:11px;color:var(--ink3);margin-left:8px">+37 lainnya</span>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm">A4 PDF</button>
+          <button class="btn btn-accent btn-sm">Download →</button>
+        </div>
+      </div>
+      <div style="padding:20px;background:var(--paper2);min-height:calc(100vh - 104px)">
+        <div class="cv-preview-page">
+          <div class="cv-p-name">Andi Pratama</div>
+          <div class="cv-p-title">Product Manager</div>
+          <div class="cv-p-contact">andi@email.com · +62 812-xxxx · linkedin.com/in/andipratama · Jakarta</div>
+          <div class="cv-p-divider"></div>
+          <div class="cv-p-section">Ringkasan</div>
+          <p style="font-size:12px;color:var(--ink2);line-height:1.7;margin-bottom:16px">Product Manager dengan 4 tahun pengalaman di industri e-commerce dan fintech. Fokus pada growth product dan data-driven decision making.</p>
+          <div class="cv-p-divider"></div>
+          <div class="cv-p-section">Pengalaman</div>
+          <div class="cv-p-exp-title">Senior Product Manager</div>
+          <div class="cv-p-exp-co">Tokopedia <span>2021 – 2024</span></div>
+          <div class="cv-p-bullet">Led product strategy untuk Tokopedia Pay, meningkatkan GMV 40% YoY</div>
+          <div class="cv-p-bullet">Mengelola agile sprint tim 8 engineer dan 2 designer</div>
+          <div class="cv-p-bullet">Analisis data via SQL, A/B testing, dan funnel optimization</div>
+          <div style="margin-top:12px">
+            <div class="cv-p-exp-title">Product Analyst</div>
+            <div class="cv-p-exp-co">Bukalapak <span>2019 – 2021</span></div>
+            <div class="cv-p-bullet">Mendevelop dashboard monitoring KPI dengan SQL dan Tableau</div>
+            <div class="cv-p-bullet">Membantu roadmap prioritization untuk 3 product squad</div>
+          </div>
+          <div class="cv-p-divider" style="margin-top:16px"></div>
+          <div class="cv-p-section">Skills</div>
+          <div class="cv-p-skills">
+            <span class="skill-chip">Product Strategy</span>
+            <span class="skill-chip">SQL</span>
+            <span class="skill-chip">Data Analysis</span>
+            <span class="skill-chip">Agile / Scrum</span>
+            <span class="skill-chip">Figma</span>
+            <span class="skill-chip">Stakeholder Management</span>
+            <span class="skill-chip">A/B Testing</span>
+          </div>
+          <div class="cv-p-divider"></div>
+          <div class="cv-p-section">Pendidikan</div>
+          <div class="cv-p-exp-title">S1 Teknik Informatika</div>
+          <div class="cv-p-exp-co">Universitas Indonesia <span>2015 – 2019</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 3 — CV TAILOR
+═══════════════════════════════════════ -->
+<div class="screen" id="screen3">
+<div class="app-layout">
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Menu</div>
+      <div class="sidebar-item" onclick="goto(1)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </div>
+      <div class="sidebar-item" onclick="goto(2)">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        CV Builder
+      </div>
+      <div class="sidebar-item active">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        CV Tailor
+        <span class="sidebar-badge">Baru</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Riwayat Tailor</div>
+      <div class="sidebar-item">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+        PM · GoPay
+        <span style="margin-left:auto;font-size:10px;color:var(--accent);font-weight:500">82%</span>
+      </div>
+      <div class="sidebar-item">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+        Sr PM · Traveloka
+        <span style="margin-left:auto;font-size:10px;color:var(--amber);font-weight:500">71%</span>
+      </div>
+    </div>
+    <div class="sidebar-avatar" style="margin-top:16px">
+      <div class="avatar">AP</div>
+      <div class="avatar-info"><p>Andi Pratama</p><span>2/3 tailor gratis</span></div>
+    </div>
+  </div>
+
+  <div style="flex:1;overflow-y:auto">
+  <div class="tailor-layout">
+    <div class="tailor-header">
+      <div class="tailor-header-left">
+        <h1>CV Tailor</h1>
+        <p>Paste job description → CV kamu diadaptasi otomatis dalam detik</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="font-size:12px;color:var(--ink3)">Master CV:</span>
+        <span style="font-size:12px;font-weight:500;color:var(--ink);background:var(--paper2);padding:4px 10px;border-radius:6px;border:1px solid var(--border)">Andi Pratama</span>
+        <button class="btn btn-ghost btn-sm" onclick="goto(2)">Ganti</button>
+      </div>
+    </div>
+
+    <div class="tailor-grid">
+      <!-- left: JD input -->
+      <div class="tailor-panel">
+        <div class="panel-header">
+          <div class="panel-title-row">
+            <span class="panel-title">Job Description</span>
+            <span class="panel-badge jd">Input</span>
+          </div>
+          <button class="btn btn-ghost btn-sm">Paste JD</button>
+        </div>
+        <div class="panel-body">
+          <textarea class="jd-textarea">Product Manager — GoPay (Gojek Group)
+
+Kami mencari PM yang berpengalaman untuk bergabung dengan tim GoPay. Kandidat ideal memiliki:
+
+- Pengalaman 3+ tahun sebagai Product Manager di industri fintech atau payments
+- Kemampuan product strategy yang kuat dan data-driven
+- Menguasai SQL untuk analisis data mandiri
+- Pengalaman mengelola agile sprint dan cross-functional teams
+- Kemampuan stakeholder management di level VP ke atas
+- Familiar dengan OKR framework
+
+Tanggung jawab:
+- Mendefinisikan roadmap produk GoPay
+- Kolaborasi dengan engineering, design, dan bisnis
+- Memimpin A/B testing dan growth experiments</textarea>
+          <div class="kw-extract">
+            <div class="kw-extract-label">Keyword terdeteksi:</div>
+            <div class="kw-chips">
+              <span class="kw found">product strategy ✓</span>
+              <span class="kw found">SQL ✓</span>
+              <span class="kw found">agile sprint ✓</span>
+              <span class="kw found">data-driven ✓</span>
+              <span class="kw found">stakeholder management ✓</span>
+              <span class="kw found">A/B testing ✓</span>
+              <span class="kw missing">fintech ✗</span>
+              <span class="kw partial">OKR framework ~</span>
+              <span class="kw missing">payments ✗</span>
+            </div>
+          </div>
+          <div style="margin-top:14px">
+            <button class="btn btn-accent" style="width:100%;justify-content:center" onclick="alert('AI sedang men-tailor CV kamu...\n\nDalam produk asli, ini akan memanggil API AI untuk rewrite CV berdasarkan JD di atas.')">
+              ✦ Tailor CV Sekarang
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- right: result -->
+      <div class="tailor-panel">
+        <div class="panel-header">
+          <div class="panel-title-row">
+            <span class="panel-title">CV Hasil Adaptasi</span>
+            <span class="panel-badge ai">AI Generated</span>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm">Edit</button>
+            <button class="btn btn-accent btn-sm">Download PDF</button>
+          </div>
+        </div>
+        <div class="tailor-result">
+          <div class="result-section">
+            <div class="result-label">Ringkasan — diadaptasi</div>
+            <div class="diff-line">
+              <span class="diff-removed">Product Manager dengan 4 tahun pengalaman di e-commerce.</span>
+            </div>
+            <div class="diff-line">
+              <span class="diff-added">Product Manager dengan 4 tahun pengalaman di e-commerce dan fintech</span>
+              <span class="diff-neutral">, spesialis dalam </span>
+              <span class="diff-added">payments product</span>
+              <span class="diff-neutral"> dan data-driven growth.</span>
+            </div>
+          </div>
+          <div class="result-section">
+            <div class="result-label">Pengalaman Tokopedia — bullet points dioptimasi</div>
+            <div class="diff-line">
+              <span class="diff-neutral">· Led </span><span class="diff-added">product strategy & roadmap</span><span class="diff-neutral"> untuk Tokopedia Pay — </span><span class="diff-added">platform fintech</span><span class="diff-neutral"> dengan 10M+ users</span>
+            </div>
+            <div class="diff-line">
+              <span class="diff-neutral">· Mengelola </span><span class="diff-added">agile sprint</span><span class="diff-neutral"> tim cross-functional 8 engineer, termasuk </span><span class="diff-added">stakeholder management</span><span class="diff-neutral"> level VP</span>
+            </div>
+            <div class="diff-line">
+              <span class="diff-neutral">· Analisis via </span><span class="diff-added">SQL</span><span class="diff-neutral"> dan A/B testing — menggunakan </span><span class="diff-added">OKR framework</span><span class="diff-neutral"> untuk tracking impact</span>
+            </div>
+          </div>
+          <div class="result-section">
+            <div class="result-label">Skills — keyword baru ditambahkan</div>
+            <div class="cv-p-skills" style="margin-top:4px">
+              <span class="skill-chip">Product Strategy</span>
+              <span class="skill-chip">SQL</span>
+              <span class="skill-chip" style="background:var(--accent-light);color:var(--accent);border-color:transparent">Fintech ✦</span>
+              <span class="skill-chip" style="background:var(--accent-light);color:var(--accent);border-color:transparent">Payments ✦</span>
+              <span class="skill-chip" style="background:var(--accent-light);color:var(--accent);border-color:transparent">OKR ✦</span>
+              <span class="skill-chip">Agile / Scrum</span>
+              <span class="skill-chip">Stakeholder Mgmt</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- score panel -->
+    <div class="score-panel">
+      <div style="font-size:14px;font-weight:500;margin-bottom:16px">Match score analysis</div>
+      <div class="score-main">
+        <div class="score-circle">
+          <div class="score-circle-inner">
+            <div class="score-num">82</div>
+            <div class="score-pct">% match</div>
+          </div>
+        </div>
+        <div class="score-breakdown">
+          <div class="score-row">
+            <div class="score-row-label">Keyword match <span>9/11</span></div>
+            <div class="score-track2"><div class="score-fill2 g" style="width:82%"></div></div>
+          </div>
+          <div class="score-row">
+            <div class="score-row-label">Relevansi pengalaman <span>90%</span></div>
+            <div class="score-track2"><div class="score-fill2 g" style="width:90%"></div></div>
+          </div>
+          <div class="score-row">
+            <div class="score-row-label">Seniority fit <span>75%</span></div>
+            <div class="score-track2"><div class="score-fill2 a" style="width:75%"></div></div>
+          </div>
+          <div class="score-row">
+            <div class="score-row-label">Keyword hilang <span style="color:var(--danger)">payments, fintech*</span></div>
+            <div class="score-track2"><div class="score-fill2 r" style="width:18%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="action-bar">
+        <button class="btn btn-accent">Download PDF ↓</button>
+        <button class="btn btn-ghost">Generate Cover Letter</button>
+        <button class="btn btn-ghost">Simpan Versi</button>
+        <button class="btn btn-ghost" onclick="goto(1)" style="margin-left:auto">Kembali ke Dashboard →</button>
+      </div>
+    </div>
+
+  </div>
+  </div>
+</div>
+</div>
+
+<!-- PAGE INDICATOR -->
+<div class="page-indicator">
+  <span style="font-size:11px;color:rgba(250,249,246,.5)">Layar</span>
+  <div class="page-dots">
+    <div class="page-dot active" id="dot0" onclick="goto(0)"></div>
+    <div class="page-dot" id="dot1" onclick="goto(1)"></div>
+    <div class="page-dot" id="dot2" onclick="goto(2)"></div>
+    <div class="page-dot" id="dot3" onclick="goto(3)"></div>
+  </div>
+  <span style="font-size:11px;color:rgba(250,249,246,.7)" id="page-name">Landing</span>
+</div>
+
+<script>
+const names = ['Landing','Dashboard','CV Builder','CV Tailor'];
+let cur = 0;
+function goto(n) {
+  document.getElementById('screen'+cur).classList.remove('active');
+  document.getElementById('dot'+cur).classList.remove('active');
+  document.getElementById('tab'+cur).classList.remove('active');
+  cur = n;
+  document.getElementById('screen'+cur).classList.add('active');
+  document.getElementById('dot'+cur).classList.add('active');
+  document.getElementById('tab'+cur).classList.add('active');
+  document.getElementById('page-name').textContent = names[cur];
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>

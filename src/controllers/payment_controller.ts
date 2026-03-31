@@ -3,6 +3,11 @@ import { users, transactions } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 // @ts-ignore
 const midtransClient = require("midtrans-client");
+import { Environment, Paddle } from "@paddle/paddle-node-sdk";
+
+const paddle = new Paddle(process.env.PADDLE_API_KEY || "", {
+  environment: (process.env.PADDLE_ENVIRONMENT as any) || Environment.sandbox,
+});
 
 const snap = new midtransClient.Snap({
   isProduction: process.env.MIDTRANS_IS_PRODUCTION === "true",
@@ -115,5 +120,69 @@ export const finalizeMidtransTransaction = async (orderId: string, status: strin
         })
         .where(eq(users.id, user.id));
     }
+  }
+};
+
+export const handlePaddleWebhook = async ({ request, set, body }: any) => {
+  const signature = request.headers.get("paddle-signature") || "";
+
+  try {
+    const eventData = paddle.webhooks.unmarshal(JSON.stringify(body), process.env.PADDLE_API_KEY || "", signature);
+    
+    if (!eventData) {
+      set.status = 400;
+      return { error: "Invalid signature" };
+    }
+
+    // @ts-ignore
+    if (eventData.eventType === "transaction.completed") {
+      // @ts-ignore
+      const transactionId = eventData.data.id;
+      // @ts-ignore
+      const customerId = eventData.data.customerId;
+      // @ts-ignore
+      const items = eventData.data.items;
+      // @ts-ignore
+      const customData = eventData.data.customData; // We should pass userId in customData from frontend
+
+      const userId = customData?.userId;
+      if (!userId) return { status: "No User ID" };
+
+      let extraCredits = 0;
+      let setPro = false;
+
+      // Check items to determine product
+      for (const item of items) {
+        if (item.priceId === process.env.PADDLE_PRICE_ELITE_PRO) setPro = true;
+        if (item.priceId === process.env.PADDLE_PRICE_DAYA_GEDOR) extraCredits += 10;
+      }
+
+      const user = await db.query.users.findFirst({ where: eq(users.id, Number(userId)) });
+      if (user) {
+        await db.update(users)
+          .set({
+            credits: user.credits + extraCredits,
+            isPro: setPro ? true : user.isPro,
+            tier: setPro ? "pro" : user.tier,
+            paddleCustomerId: customerId
+          })
+          .where(eq(users.id, user.id));
+
+        await db.insert(transactions).values({
+          userId: user.id,
+          amount: 0, // In transaction.completed, you can get the amount if needed
+          currency: "USD",
+          provider: "paddle",
+          status: "success",
+          orderId: transactionId,
+        });
+      }
+    }
+
+    return { status: "OK" };
+  } catch (err: any) {
+    console.error("Paddle Webhook Error:", err.message);
+    set.status = 500;
+    return { error: err.message };
   }
 };

@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
-import { handleMidtransCheckout, handleMidtransWebhook } from "../controllers/payment_controller";
+import { handleMidtransCheckout, handleMidtransWebhook, handlePaddleWebhook } from "../controllers/payment_controller";
 
 export const paymentRoutes = new Elysia({ prefix: "/payments" })
   .use(
@@ -30,4 +30,5 @@ export const paymentRoutes = new Elysia({ prefix: "/payments" })
   }, {
     body: t.Object({ orderId: t.String() })
   })
-  .post("/webhook/midtrans", handleMidtransWebhook as any);
+  .post("/webhook/midtrans", handleMidtransWebhook as any)
+  .post("/webhook/paddle", handlePaddleWebhook as any);

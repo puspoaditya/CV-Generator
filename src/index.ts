@@ -9,7 +9,22 @@ import { dashboardRoutes } from "./routes/dashboard_routes";
 import { paymentRoutes } from "./routes/payment_routes";
 
 const app = new Elysia()
-  .use(cors())
+  .use(cors({
+    origin: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }))
+  .onRequest(({ request }) => {
+    console.log(`[BACKEND] ${request.method} ${request.url}`);
+  })
+  .onAfterHandle(({ request, set }) => {
+    console.log(`[BACKEND] ${request.method} ${request.url} -> STATUS: ${set.status || 200}`);
+  })
+  .onError(({ code, error, set }: any) => {
+    console.error(`[ERROR]: (${code})`, error?.message || error);
+    set.status = 500;
+    return { error: error?.message || "Internal Server Error" };
+  })
   .use(swagger())
   .use(
     jwt({
