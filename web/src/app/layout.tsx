@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Outfit } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { AuthProvider } from "@/components/providers/auth-provider";
 
 const fraunces = Fraunces({ 
   subsets: ["latin"],
@@ -35,10 +36,11 @@ export default function RootLayout({
   return (
     <html lang="id" className={`${fraunces.variable} ${outfit.variable} scroll-smooth`}>
       <body className="antialiased selection:bg-primary/30 min-h-screen font-sans">
-        {children}
-        <Toaster position="top-center" richColors />
+        <AuthProvider>
+          {children}
+          <Toaster position="top-center" richColors />
+        </AuthProvider>
       </body>
     </html>
   );
 }
-

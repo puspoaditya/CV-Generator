@@ -17,19 +17,21 @@ export const generationRoutes = new Elysia({ prefix: "/generate" })
   )
   .post("/resume", handleGenerateResume as any, {
     body: t.Object({
-      baseResumeId: t.Number(),
+      masterResumeId: t.Number(),
+      targetRole: t.Optional(t.String()),
+      targetCompany: t.Optional(t.String()),
       jobDescription: t.String(),
     }),
   })
   .post("/cover-letter", handleGenerateCoverLetter as any, {
     body: t.Object({
-      baseResumeId: t.Number(),
+      masterResumeId: t.Number(),
       jobDescription: t.String(),
     }),
   })
   .post("/interview-prep", handleGenerateInterviewPrep as any, {
     body: t.Object({
-      baseResumeId: t.Number(),
+      masterResumeId: t.Number(),
       jobDescription: t.String(),
     }),
   })

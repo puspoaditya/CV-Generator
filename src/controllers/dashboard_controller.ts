@@ -1,6 +1,6 @@
 import { db } from "../db";
 import { users, generationHistory, resumes } from "../db/schema";
-import { eq, desc, count, sql } from "drizzle-orm";
+import { eq, desc, count, sql, and } from "drizzle-orm";
 import type { Context } from "elysia";
 
 const getUserFromToken = async (jwt: any, request: Request) => {
@@ -36,10 +36,15 @@ export const getStats = async ({ jwt, set, request }: Context & { jwt: any }) =>
     where: eq(users.id, payload.id),
   });
 
-  const resumeCount = await db
+  const masterCount = await db
     .select({ value: count() })
     .from(resumes)
-    .where(eq(resumes.userId, payload.id));
+    .where(and(eq(resumes.userId, payload.id), eq(resumes.type, "master")));
+
+  const optimizedCount = await db
+    .select({ value: count() })
+    .from(resumes)
+    .where(and(eq(resumes.userId, payload.id), eq(resumes.type, "optimized")));
 
   const historyCount = await db
     .select({ value: count() })
@@ -47,7 +52,9 @@ export const getStats = async ({ jwt, set, request }: Context & { jwt: any }) =>
     .where(eq(generationHistory.userId, payload.id));
 
   return {
-    resumesCount: resumeCount[0]?.value || 0,
+    masterCount: masterCount[0]?.value || 0,
+    optimizedCount: optimizedCount[0]?.value || 0,
+    resumesCount: (masterCount[0]?.value || 0) + (optimizedCount[0]?.value || 0),
     totalGenerations: historyCount[0]?.value || 0,
     credits: user?.credits || 0,
     isPro: user?.isPro || false,
