@@ -26,7 +26,7 @@ const handler = NextAuth({
           const data = await res.json();
           if (res.ok && data.token) {
             // Store our custom JWT in the user object so it's accessible in the session
-            user.accessToken = data.token;
+            (user as any).accessToken = data.token;
             return true;
           }
         } catch (error) {
